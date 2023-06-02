@@ -6,8 +6,8 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.0.9</AssemblyVersion>
-    <FileVersion>1.0.0.9</FileVersion>
+    <AssemblyVersion>1.0.0.15</AssemblyVersion>
+    <FileVersion>1.0.0.15</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,10 @@
     <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <None Remove="Assets\StoreLogo.png" />
     <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

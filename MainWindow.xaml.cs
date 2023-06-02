@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,14 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
+using Newtonsoft.Json;
+
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -257,13 +252,13 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             else
             {
                 // Launch local app
-                if (File.Exists(app.FilePath))
+                if (File.Exists(app.Path))
                 {
                     // Prepare the arguments.
                     string arguments = app.Args;
 
                     // Launch the app.
-                    Process.Start(new ProcessStartInfo(app.FilePath, arguments));
+                    Process.Start(new ProcessStartInfo(app.Path, arguments));
                 }
                 else
                 {
@@ -280,7 +275,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             throw new NotImplementedException();
         }
 
-        private async void Bt_AddProfile_Click(object sender, RoutedEventArgs e)
+        private void Bt_AddProfile_Click(object sender, RoutedEventArgs e)
         {
             var window = new AddProfileDialog();  // Assuming you have created this dialog window
 
@@ -292,7 +287,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
                 AppState.Instance.CurrentProfile = newProfile;
 
-                await SaveProfilesAsync();
+                SaveProfilesAsync();
             }
         }
 
@@ -400,39 +395,53 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            //This code checks if the source of the event is a button and if the button has a tag of type MyApp. If so, it navigates to the AddApp page, passing in the selected profile, the main page, and the MyApp object.
-            //Check if the source of the event is a button
+            // This code checks if the source of the event is a button and if the button has a tag of type MyApp.
+            // If so, it opens the AddApp window, passing in the selected profile, the main page, and the MyApp object.
+
+            // Check if the source of the event is a button
             if (e.OriginalSource is Button button)
             {
-                //Check if the button has a tag of type MyApp
+                // Check if the button has a tag of type MyApp
                 if (button.Tag is MyApp app)
                 {
-                    //Navigate to the AddApp page, passing in the selected profile, the main page, and the MyApp object
-                    Frame.Navigate(typeof(AddApp), new Tuple<Profile, MainWindow , MyApp>(MainWindow State.SelectedProfile, this, app));
+                    // Instantiate the AddApp window, passing in the selected profile, the main page, and the MyApp object
+                    var addAppWindow = new AddApp()
+                    {
+                        MainPageReference = this, // Assuming you have this property to set the reference to the main window
+                        SelectedProfile = MainWindowViewModel.SelectedProfile, // Assuming you have this property to set the selected profile
+                        AppToEdit = app // Assuming you have this property to set the app to edit
+                    };
+
+                    // Open the AddApp window
+                    addAppWindow.ShowDialog();
                 }
             }
         }
+
 
         public async Task LoadProfilesAsync()
         {
             try
             {
-                // Get the file from the local folder
-                StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync("profiles.json");
+                string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string filePath = Path.Combine(localFolder, "profiles.json");
 
-                // Read the file to a string
-                string json = await FileIO.ReadTextAsync(file);
+                if (File.Exists(filePath))
+                {
+                    // Read the file to a string
+                    string json = await File.ReadAllTextAsync(filePath);
 
-                // Deserialize the JSON string to a list of profiles
-                ObservableCollection<Profile> loadedProfiles = JsonConvert.DeserializeObject<ObservableCollection<Profile>>(json);
+                    // Deserialize the JSON string to a list of profiles
+                    ObservableCollection<Profile> loadedProfiles = JsonConvert.DeserializeObject<ObservableCollection<Profile>>(json);
 
-                // Set the loaded profiles to AppState.Instance.Profiles
-                AppState.Instance.Profiles = loadedProfiles ?? new ObservableCollection<Profile>();
-            }
-            catch (FileNotFoundException)
-            {
-                // The profiles file doesn't exist, initialize Profiles with an empty collection
-                AppState.Instance.Profiles = new ObservableCollection<Profile>();
+                    // Set the loaded profiles to AppState.Instance.Profiles
+                    AppState.Instance.Profiles = loadedProfiles ?? new ObservableCollection<Profile>();
+                }
+                else
+                {
+                    // The profiles file doesn't exist, initialize Profiles with an empty collection
+                    AppState.Instance.Profiles = new ObservableCollection<Profile>();
+                }
             }
             catch (Exception ex)
             {
