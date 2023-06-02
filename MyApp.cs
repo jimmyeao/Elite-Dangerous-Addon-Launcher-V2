@@ -30,7 +30,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
-        public string FileToken { get; set; }
+
         public string Path
         {
             get { return _path; }
@@ -110,12 +110,12 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
 
 
 }

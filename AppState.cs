@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,54 +9,55 @@ using System.Threading.Tasks;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 {
-    public class Profile : INotifyPropertyChanged
+    public class AppState : INotifyPropertyChanged
     {
-        private string _name;
-        private bool _isDefault;
-        private ObservableCollection<MyApp> _apps;
-
-        public string Name
+        private static AppState _instance;
+        public static AppState Instance
         {
-            get { return _name; }
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new AppState();
+                }
+                return _instance;
+            }
+        }
+        public ObservableCollection<MyApp> Apps { get; set; }
+        public bool CloseAllAppsOnExit { get; set; }
+        private ObservableCollection<Profile> _profiles;
+        public ObservableCollection<Profile> Profiles
+        {
+            get { return _profiles; }
             set
             {
-                if (_name != value)
+                if (_profiles != value)
                 {
-                    _name = value;
+                    _profiles = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public bool IsDefault
+        private Profile _currentProfile;
+        public Profile CurrentProfile
         {
-            get { return _isDefault; }
+            get { return _currentProfile; }
             set
             {
-                if (_isDefault != value)
+                if (_currentProfile != value)
                 {
-                    _isDefault = value;
+                    _currentProfile = value;
                     OnPropertyChanged();
                 }
             }
         }
 
-        public ObservableCollection<MyApp> Apps
-        {
-            get { return _apps; }
-            set
-            {
-                if (_apps != value)
-                {
-                    _apps = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public Profile()
+        private AppState()
         {
             Apps = new ObservableCollection<MyApp>();
+            Profiles = new ObservableCollection<Profile>();
+            CloseAllAppsOnExit = false;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -66,9 +66,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-
-
-   
 
 
 }

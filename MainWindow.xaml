@@ -10,10 +10,11 @@
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10">
             <TextBlock Text="Profile:" Foreground="Orange" VerticalAlignment="Center"/>
             <ComboBox x:Name="Cb_Profiles" 
-                ItemsSource="{Binding Profiles}"
-                SelectedItem="{Binding CurrentProfile}"
-                DisplayMemberPath="Name"
-                Width="156" Margin="10,0"/>
+          ItemsSource="{Binding Profiles}"
+          SelectedItem="{Binding CurrentProfile}"
+          DisplayMemberPath="Name"
+          SelectionChanged="Cb_Profiles_SelectionChanged"/>
+
 
 
 
@@ -27,24 +28,18 @@
 
         </StackPanel>
         <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" />
-        <ListView x:Name="addonListView" Margin="10" ItemsSource="{Binding CurrentProfile.Apps}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <CheckBox Grid.Column="0" Content="{Binding Name}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" Unchecked="CheckBox_Unchecked" Tag="{Binding}" />
-
-                        <Button Grid.Column="1" Content="Edit" Tag="{Binding}" />
-                        <Button Grid.Column="2" Content="X" Tag="{Binding}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
+        <ListView x:Name="AddonListView" ItemsSource="{Binding CurrentProfile.Apps}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="App Name" DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="App Path" DisplayMemberBinding="{Binding Path}" />
+                    <GridViewColumn Header="Args" DisplayMemberBinding="{Binding Args}" />
+                    <GridViewColumn Header="Installation URL" DisplayMemberBinding="{Binding InstallationURL}" />
+                    <GridViewColumn Header="Exe Name" DisplayMemberBinding="{Binding ExeName}" />
+                    <GridViewColumn Header="Web App URL" DisplayMemberBinding="{Binding WebAppURL}" />
+                    <GridViewColumn Header="Enabled" DisplayMemberBinding="{Binding IsEnabled}" />
+                </GridView>
+            </ListView.View>
         </ListView>
 
     </DockPanel>

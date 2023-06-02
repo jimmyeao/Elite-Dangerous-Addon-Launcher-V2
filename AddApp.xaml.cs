@@ -91,16 +91,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
                 newApp.PropertyChanged += MyApp_PropertyChanged;
 
+                // Add the new application to the SelectedProfile's Apps list
                 SelectedProfile.Apps.Add(newApp);
-
-                // Handle the case when no profile is selected.
             }
 
-            // Refresh the ItemsSource of your ListView
-            MainPageReference.UpdateAddonListView();
+            // Save the profiles after adding the app
+            MainPageReference.SaveProfilesAsync();
 
-            this.Close(); // Close the current window after the app is added.
+            // Refresh the ItemsSource of your ListView
+            MainPageReference.UpdateListView();
+
+            this.Close();
         }
+
 
         private void MyApp_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
