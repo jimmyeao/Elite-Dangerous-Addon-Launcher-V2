@@ -1,19 +1,15 @@
-﻿using System;
-
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
-using Newtonsoft.Json;
-
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -21,10 +17,13 @@ namespace Elite_Dangerous_Addon_Launcer_V2
     public class AppState : INotifyPropertyChanged
     {
         #region Private Fields
-        private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         // Singleton pattern implementation.
         private static AppState _instance;
+
+        private ObservableCollection<Profile> _profiles;
+        private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+
         public static AppState Instance
         {
             get
@@ -39,7 +38,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
 
         public Profile CurrentProfile { get; set; }
-        private ObservableCollection<Profile> _profiles;
 
         #endregion Private Fields
 
@@ -59,7 +57,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         #endregion Public Events
 
         #region Public Properties
-
 
         public ObservableCollection<Profile> Profiles
         {
@@ -85,39 +82,42 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         #endregion Private Methods
     }
+    public class MainViewModel
+    {
+        public AppState AppStateInstance => AppState.Instance;
+    }
+
 
     public partial class MainWindow : Window
     {
         #region Private Fields
 
-        private ObservableCollection<Profile> _profiles;
         private static object _lock = new object();
-        public MainWindowViewModel MainWindowViewModel { get; set; }
-        public static MainWindow Instance { get; private set; }
+        private ObservableCollection<Profile> _profiles;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Create a new instance of MainWindow State
-            MainWindowViewModel = new MainWindowViewModel();
-
-            // Set the ItemsSource of the ComboBox to the Profiles in MainWindow State
-            // This should now be done through XAML binding, not explicitly in code-behind
-            //Cb_Profiles.ItemsSource = MainWindow State.Profiles;
-            this.DataContext = MainWindowViewModel;
             // Assign the event handler to the Loaded event
             this.Loaded += MainWindow_Loaded;
 
-            // Set the instance of MainWindow  to this
+            // Set the instance of MainWindow to this
             Instance = this;
+
+            // Set the data context to AppState instance
+            this.DataContext = AppState.Instance;
 
             if (Properties.Settings.Default.CloseAllAppsOnExit)
             {
                 CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
             }
         }
+
+
+        public static MainWindow Instance { get; private set; }
+        public MainWindowViewModel MainWindowViewModel { get; set; }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -143,14 +143,17 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             if (defaultProfile != null)
             {
                 Cb_Profiles.SelectedItem = defaultProfile;
+                // Ensure that CurrentProfile is set to the default profile
+                AppState.Instance.CurrentProfile = defaultProfile;
             }
-            AppState.Instance.CurrentProfile.ProfileChanged += HandleProfileChanged;
+
+            if (AppState.Instance.CurrentProfile != null)
+            {
+                AppState.Instance.CurrentProfile.ProfileChanged += HandleProfileChanged;
+            }
         }
 
-
-
-
-        #endregion Public Constructors
+        #endregion Private Fields
 
         #region Public Properties
 
@@ -159,86 +162,12 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         #endregion Public Properties
 
         #region Private Methods
-        public void UpdateAddonListView()
-        {
-            // Refresh the ItemsSource of your ListView
-            addonListView.ItemsSource = null;
-            if (AppState.Instance.CurrentProfile != null)
-            {
-                addonListView.ItemsSource = AppState.Instance.CurrentProfile.Apps;
-            }
-        }
-        public void UpdateSelectedProfile(Profile profile)
-        {
-            if (AppState.Instance.CurrentProfile != null)
-            {
-                AppState.Instance.CurrentProfile.ProfileChanged -= Instance.HandleProfileChanged;
-            }
-
-            AppState.Instance.CurrentProfile = profile;
-
-            if (AppState.Instance.CurrentProfile != null)
-            {
-                AppState.Instance.CurrentProfile.ProfileChanged += async () => await SaveProfilesAsync();
-            }
-        }
-
-
-
-        public async Task SaveProfilesAsync()
-        {
-            await semaphore.WaitAsync();
-
-            try
-            {
-                // Serialize the profiles into a JSON string
-                var profilesJson = JsonConvert.SerializeObject(AppState.Instance.Profiles);
-
-                // Create a file called "profiles.json" in the local folder
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "profiles.json");
-
-                // Write the JSON string to the file
-                await File.WriteAllTextAsync(path, profilesJson);
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        }
-
 
         public async void HandleProfileChanged()
         {
             if (AppState.Instance.CurrentProfile != null)
             {
                 await SaveProfilesAsync();
-            }
-        }
-
-
-
-        private void Bt_AddApp_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
-            if (selectedProfile != null)
-            {
-                // Open new Window or Dialog here. You will need to implement the window/dialog first.
-            }
-            else
-            {
-                // Handle the case when no profile is selected.
-            }
-        }
-
-        private void Btn_Launch_Click(object sender, RoutedEventArgs e)
-        {
-            // Code to launch all enabled apps
-            foreach (var app in AppState.Instance.CurrentProfile.Apps)
-            {
-                if (app.IsEnabled)
-                {
-                    _ = LaunchApp(app);
-                }
             }
         }
 
@@ -266,158 +195,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
-
-
-
-        private MyApp JsonToMyApp(string jsonString)
-        {
-            // You will need to implement this function to convert a JSON string to a MyApp instance
-            throw new NotImplementedException();
-        }
-
-        private void Bt_AddProfile_Click(object sender, RoutedEventArgs e)
-        {
-            var window = new AddProfileDialog();  // Assuming you have created this dialog window
-
-            if (window.ShowDialog() == true)
-            {
-                string profileName = window.ProfileName;  // Assuming you have a property to get the TextBox Text
-                var newProfile = new Profile { Name = profileName };
-                AppState.Instance.Profiles.Add(newProfile);
-
-                AppState.Instance.CurrentProfile = newProfile;
-
-                SaveProfilesAsync();
-            }
-        }
-
-
-        private async void Bt_RemoveProfile_Click(object sender, RoutedEventArgs e)
-        {
-            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
-            {
-                AppState.Instance.Profiles.Remove(selectedProfile);
-                await SaveProfilesAsync();
-
-                // Select the 'Default' profile if it exists or the first one
-                Profile defaultProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == "Default")
-                                         ?? AppState.Instance.Profiles.FirstOrDefault();
-
-                Cb_Profiles.SelectedItem = defaultProfile;
-                await SaveProfilesAsync();
-            }
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            var checkBox = (CheckBox)sender;
-            var app = (MyApp)checkBox.DataContext;
-            app.IsEnabled = true;
-            SaveProfilesAsync();
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var checkBox = (CheckBox)sender;
-            var app = (MyApp)checkBox.DataContext;
-            if (app != null)
-            {
-                app.IsEnabled = false;
-                SaveProfilesAsync();
-            }
-
-        }
-
-
-
-        private void Cb_Profiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
-            {
-                // Deselect the previously selected profile
-                var previouslySelectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Selected);
-                if (previouslySelectedProfile != null)
-                {
-                    previouslySelectedProfile.Selected = false;
-                    Debug.WriteLine($"Deselected profile: {previouslySelectedProfile.Name}");
-                }
-
-                // Fetch the name of the currently selected profile
-                var selectedProfileName = selectedProfile.Name;
-
-                // Select the currently selected profile
-                var currentSelectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == selectedProfileName);
-                if (currentSelectedProfile != null)
-                {
-                    currentSelectedProfile.Selected = true;
-                    Debug.WriteLine($"Selected profile: {currentSelectedProfile.Name}");
-                    UpdateListView();
-                    DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
-                }
-            }
-        }
-
-        private void DefaultCheckbox_Checked(object sender, RoutedEventArgs e)
-        {
-            // Check if the currently selected item in the Cb_Profiles ComboBox is a Profile object
-            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
-            {
-                // Find the previously default profile in the AppState.Instance.Profiles collection
-                var previouslyDefaultProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
-
-                // If a previously default profile was found, set its IsDefault property to false
-                if (previouslyDefaultProfile != null)
-                {
-                    previouslyDefaultProfile.IsDefault = false;
-                }
-
-                // Set the IsDefault property of the currently selected profile to true
-                selectedProfile.IsDefault = true;
-            }
-        }
-
-        private void CloseAllAppsCheckbox_Checked(object sender, RoutedEventArgs e)
-        {
-            // Assuming that you have a CloseAllAppsOnExit property in your Settings
-            Properties.Settings.Default.CloseAllAppsOnExit = true;
-            Properties.Settings.Default.Save();
-        }
-
-
-        private void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            // Assuming that you have a CloseAllAppsOnExit property in your Settings
-            Properties.Settings.Default.CloseAllAppsOnExit = false;
-            Properties.Settings.Default.Save();
-        }
-
-
-
-        private void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            // This code checks if the source of the event is a button and if the button has a tag of type MyApp.
-            // If so, it opens the AddApp window, passing in the selected profile, the main page, and the MyApp object.
-
-            // Check if the source of the event is a button
-            if (e.OriginalSource is Button button)
-            {
-                // Check if the button has a tag of type MyApp
-                if (button.Tag is MyApp app)
-                {
-                    // Instantiate the AddApp window, passing in the selected profile, the main page, and the MyApp object
-                    var addAppWindow = new AddApp()
-                    {
-                        MainPageReference = this, // Assuming you have this property to set the reference to the main window
-                        SelectedProfile = MainWindowViewModel.SelectedProfile, // Assuming you have this property to set the selected profile
-                        AppToEdit = app // Assuming you have this property to set the app to edit
-                    };
-
-                    // Open the AddApp window
-                    addAppWindow.ShowDialog();
-                }
-            }
-        }
-
 
         public async Task LoadProfilesAsync()
         {
@@ -449,22 +226,192 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-
-        private async void RemoveButton_Click(object sender, RoutedEventArgs e)
+        public async Task SaveProfilesAsync()
         {
-            // Get the MyApp object associated with the clicked button
-            MyApp appToRemove = (MyApp)((Button)sender).Tag;
+            await semaphore.WaitAsync();
 
-            // Remove the MyApp object from the list
-            var currentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Selected);
-            if (currentProfile != null)
+            try
             {
-                currentProfile.Apps.Remove(appToRemove);
-            }
-            await SaveProfilesAsync();
+                // Serialize the profiles into a JSON string
+                var profilesJson = JsonConvert.SerializeObject(AppState.Instance.Profiles);
 
-            // Update the ListView
-            UpdateListView();
+                // Create a file called "profiles.json" in the local folder
+                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "profiles.json");
+
+                // Write the JSON string to the file
+                await File.WriteAllTextAsync(path, profilesJson);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        public void UpdateAddonListView()
+        {
+            // Refresh the ItemsSource of your ListView
+            addonListView.ItemsSource = null;
+            if (AppState.Instance.CurrentProfile != null)
+            {
+                addonListView.ItemsSource = AppState.Instance.CurrentProfile.Apps;
+            }
+        }
+
+        public void UpdateSelectedProfile(Profile profile)
+        {
+            if (AppState.Instance.CurrentProfile != null)
+            {
+                AppState.Instance.CurrentProfile.ProfileChanged -= Instance.HandleProfileChanged;
+            }
+
+            AppState.Instance.CurrentProfile = profile;
+
+            if (AppState.Instance.CurrentProfile != null)
+            {
+                AppState.Instance.CurrentProfile.ProfileChanged += async () => await SaveProfilesAsync();
+            }
+        }
+
+        private async void Bt_RemoveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
+            {
+                AppState.Instance.Profiles.Remove(selectedProfile);
+                await SaveProfilesAsync();
+
+                // Select the 'Default' profile if it exists or the first one
+                Profile defaultProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == "Default")
+                                         ?? AppState.Instance.Profiles.FirstOrDefault();
+
+                Cb_Profiles.SelectedItem = defaultProfile;
+                await SaveProfilesAsync();
+            }
+        }
+
+        private void Btn_Launch_Click(object sender, RoutedEventArgs e)
+        {
+            // Code to launch all enabled apps
+            foreach (var app in AppState.Instance.CurrentProfile.Apps)
+            {
+                if (app.IsEnabled)
+                {
+                    _ = LaunchApp(app);
+                }
+            }
+        }
+
+        private void Cb_Profiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
+            {
+                // Deselect the previously selected profile
+                var previouslySelectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Selected);
+                if (previouslySelectedProfile != null)
+                {
+                    previouslySelectedProfile.Selected = false;
+                    Debug.WriteLine($"Deselected profile: {previouslySelectedProfile.Name}");
+                }
+
+                // Fetch the name of the currently selected profile
+                var selectedProfileName = selectedProfile.Name;
+
+                // Select the currently selected profile
+                var currentSelectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == selectedProfileName);
+                if (currentSelectedProfile != null)
+                {
+                    currentSelectedProfile.Selected = true;
+                    Debug.WriteLine($"Selected profile: {currentSelectedProfile.Name}");
+                    UpdateListView();
+                    DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
+                }
+            }
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            var checkBox = (CheckBox)sender;
+            var app = (MyApp)checkBox.DataContext;
+            app.IsEnabled = true;
+            SaveProfilesAsync();
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var checkBox = (CheckBox)sender;
+            var app = (MyApp)checkBox.Tag;
+            if (app != null)
+            {
+                app.IsEnabled = false;
+                SaveProfilesAsync();
+            }
+        }
+
+
+        private void CloseAllAppsCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            // Assuming that you have a CloseAllAppsOnExit property in your Settings
+            Properties.Settings.Default.CloseAllAppsOnExit = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Assuming that you have a CloseAllAppsOnExit property in your Settings
+            Properties.Settings.Default.CloseAllAppsOnExit = false;
+            Properties.Settings.Default.Save();
+        }
+
+        private void DefaultCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            // Check if the currently selected item in the Cb_Profiles ComboBox is a Profile object
+            if (Cb_Profiles.SelectedItem is Profile selectedProfile)
+            {
+                // Find the previously default profile in the AppState.Instance.Profiles collection
+                var previouslyDefaultProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
+
+                // If a previously default profile was found, set its IsDefault property to false
+                if (previouslyDefaultProfile != null)
+                {
+                    previouslyDefaultProfile.IsDefault = false;
+                }
+
+                // Set the IsDefault property of the currently selected profile to true
+                selectedProfile.IsDefault = true;
+                _ = SaveProfilesAsync();
+            }
+        }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            // This code checks if the source of the event is a button and if the button has a tag
+            // of type MyApp. If so, it opens the AddApp window, passing in the selected profile,
+            // the main page, and the MyApp object.
+
+            // Check if the source of the event is a button
+            if (e.OriginalSource is Button button)
+            {
+                // Check if the button has a tag of type MyApp
+                if (button.Tag is MyApp app)
+                {
+                    // Instantiate the AddApp window, passing in the selected profile, the main
+                    // page, and the MyApp object
+                    var addAppWindow = new AddApp()
+                    {
+                        MainPageReference = this, // Assuming you have this property to set the reference to the main window
+                        SelectedProfile = MainWindowViewModel.SelectedProfile, // Assuming you have this property to set the selected profile
+                        AppToEdit = app // Assuming you have this property to set the app to edit
+                    };
+
+                    // Open the AddApp window
+                    addAppWindow.ShowDialog();
+                }
+            }
+        }
+
+        private MyApp JsonToMyApp(string jsonString)
+        {
+            // You will need to implement this function to convert a JSON string to a MyApp instance
+            throw new NotImplementedException();
         }
 
         private void UpdateListView()
@@ -491,8 +438,53 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-
         #endregion Private Methods
+
+        private void Bt_AddApp_Click_1(object sender, RoutedEventArgs e)
+        {
+            var selectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
+            if (selectedProfile != null)
+            {
+                // Open new Window or Dialog here. You will need to implement the window/dialog first.
+            }
+            else
+            {
+                // Handle the case when no profile is selected.
+            }
+        }
+
+        private void Bt_AddProfile_Click_1(object sender, RoutedEventArgs e)
+        {
+            var window = new AddProfileDialog();  // Assuming you have created this dialog window
+
+            if (window.ShowDialog() == true)
+            {
+                string profileName = window.ProfileName;  // Assuming you have a property to get the TextBox Text
+                var newProfile = new Profile { Name = profileName };
+                AppState.Instance.Profiles.Add(newProfile);
+
+                AppState.Instance.CurrentProfile = newProfile;
+
+                _ = SaveProfilesAsync();
+            }
+        }
+
+        private void Bt_RemoveProfile_Click_1(object sender, RoutedEventArgs e)
+        {
+            // Get the currently selected profile
+            Profile profileToRemove = (Profile)Cb_Profiles.SelectedItem;
+
+            // Check if the selected profile is not null
+            if (profileToRemove != null)
+            {
+                // Remove the selected profile from the Profiles collection
+                AppState.Instance.Profiles.Remove(profileToRemove);
+
+                // Save profiles
+                _ = SaveProfilesAsync();
+            }
+        }
+
     }
 
     public class MainWindowViewModel : INotifyPropertyChanged
@@ -567,5 +559,4 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         #endregion Private Methods
     }
-
 }
