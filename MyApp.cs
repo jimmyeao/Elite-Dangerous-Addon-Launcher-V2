@@ -17,7 +17,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private string _exeName;
         private string _webAppURL;
         private bool _isEnabled;
-
+        private int _order;
+        public int Order
+        {
+            get { return _order; }
+            set
+            {
+                if (_order != value)
+                {
+                    _order = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string Name
         {
             get { return _name; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GongSolutions.Wpf.DragDrop;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -15,7 +16,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private string _name;
         private bool _isDefault;
         private ObservableCollection<MyApp> _apps;
-
+        public IDropTarget DropHandler { get; private set; }
         public string Name
         {
             get { return _name; }
@@ -58,6 +59,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         public Profile()
         {
             Apps = new ObservableCollection<MyApp>();
+            DropHandler = new ProfileDropHandler(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -4,6 +4,7 @@
         xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
         Title="MainWindow" Height="450" Width="800"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -42,18 +43,29 @@
 
                 </StackPanel>
         <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" Height="214" />
-        <ListView x:Name="AddonListView" ItemsSource="{Binding CurrentProfile.Apps}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="App Name" DisplayMemberBinding="{Binding Name}" />
-                   
-                    <GridViewColumn Header="Args" DisplayMemberBinding="{Binding Args}" />
-                   
-                    <GridViewColumn Header="Web App URL" DisplayMemberBinding="{Binding WebAppURL}" />
-                    <GridViewColumn Header="Enabled" DisplayMemberBinding="{Binding IsEnabled}" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <DataGrid x:Name="AddonDataGrid"
+                  CanUserAddRows="False"
+          ItemsSource="{Binding CurrentProfile.Apps}" 
+          dd:DragDrop.IsDragSource="True" 
+          dd:DragDrop.IsDropTarget="True" 
+          dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}"
+                  AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Args" Binding="{Binding Args}" />
+                <DataGridTextColumn Header="Web App URL" Binding="{Binding WebAppURL}" />
+                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" />
+                <DataGridTemplateColumn Header="Delete">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete" Click="DeleteButton_Click"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
 
     </DockPanel>
 

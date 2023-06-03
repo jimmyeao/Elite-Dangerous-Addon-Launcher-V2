@@ -6,8 +6,8 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.0.74</AssemblyVersion>
-    <FileVersion>1.0.0.74</FileVersion>
+    <AssemblyVersion>1.0.0.87</AssemblyVersion>
+    <FileVersion>1.0.0.87</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
     <PackageIcon>app.png</PackageIcon>
   </PropertyGroup>
@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

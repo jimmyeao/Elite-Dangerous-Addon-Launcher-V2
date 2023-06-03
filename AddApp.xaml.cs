@@ -99,7 +99,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             MainPageReference.SaveProfilesAsync();
 
             // Refresh the ItemsSource of your ListView
-            MainPageReference.UpdateListView();
+            MainPageReference.UpdateDataGrid();
 
             this.Close();
         }
