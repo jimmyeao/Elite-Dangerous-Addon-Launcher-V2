@@ -25,6 +25,7 @@
             <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}" Height="16" Checked="CloseAllAppsCheckbox_Checked" Unchecked="CloseAllAppsCheckbox_Unchecked"/>
 
             <Button x:Name="Btn_Launch" Content="Launch" Margin="10,0" Width="48" Click="Btn_Launch_Click"/>
+            <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"/>
 
         </StackPanel>
         <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" />

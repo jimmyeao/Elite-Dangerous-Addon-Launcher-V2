@@ -11,21 +11,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using MaterialDesignThemes.Wpf;
+using MaterialDesignColors;
+
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
 {
-  
-    public class MainViewModel
-    {
-        public AppState AppStateInstance => AppState.Instance;
-    }
+
 
 
     public partial class MainWindow : Window
     {
         #region Private Fields
-
+        private bool isDarkTheme = false;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         public MainWindow()
@@ -63,6 +62,27 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
           
         }
+        private void ToggleThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            isDarkTheme = !isDarkTheme;
+            ModifyTheme(isDarkTheme ? new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml")
+                                    : new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"));
+        }
+
+
+        private void ModifyTheme(Uri newThemeUri)
+        {
+            var appResources = Application.Current.Resources;
+            var oldTheme = appResources.MergedDictionaries.FirstOrDefault(d => d.Source.ToString().Contains("MaterialDesignTheme.Light.xaml") || d.Source.ToString().Contains("MaterialDesignTheme.Dark.xaml"));
+
+            if (oldTheme != null)
+            {
+                appResources.MergedDictionaries.Remove(oldTheme);
+            }
+
+            appResources.MergedDictionaries.Insert(0, new ResourceDictionary { Source = newThemeUri });
+        }
+
 
         public async Task LoadProfilesAsync()
         {
