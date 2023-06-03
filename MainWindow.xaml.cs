@@ -139,6 +139,11 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 // Handle the case when no profile is selected.
             }
         }
+        private void AddonDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            // Write the MyApp instances to the data source here, e.g.:
+            // SaveAppStateToFile();
+        }
 
 
         private void Bt_AddProfile_Click_1(object sender, RoutedEventArgs e)
@@ -218,7 +223,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             AppState.Instance.CurrentProfile.Apps.Move(sourceIndex, targetIndex);
         }
-      
+
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)  // this is the checkbox fo r the defaul profile
         {
@@ -271,7 +276,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             _ = SaveProfilesAsync();
         }
 
-        private void EditButton_Click(object sender, RoutedEventArgs e)
+        private void Btn_Edit_Click(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is Button button)
             {
