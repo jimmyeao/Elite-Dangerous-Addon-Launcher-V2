@@ -65,9 +65,42 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private void ToggleThemeButton_Click(object sender, RoutedEventArgs e)
         {
             isDarkTheme = !isDarkTheme;
-            ModifyTheme(isDarkTheme ? new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml")
-                                    : new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml"));
+
+            var darkThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
+            var lightThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
+
+            var themeUri = isDarkTheme ? darkThemeUri : lightThemeUri;
+
+            System.Diagnostics.Debug.WriteLine("Before toggle:");
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                System.Diagnostics.Debug.WriteLine($" - {dictionary.Source}");
+            }
+
+            var existingTheme = Application.Current.Resources.MergedDictionaries.FirstOrDefault(d => d.Source == themeUri);
+            if (existingTheme == null)
+            {
+                existingTheme = new ResourceDictionary() { Source = themeUri };
+                Application.Current.Resources.MergedDictionaries.Add(existingTheme);
+            }
+
+            // Remove the current theme
+            var currentTheme = Application.Current.Resources.MergedDictionaries.FirstOrDefault(d => d.Source == (isDarkTheme ? lightThemeUri : darkThemeUri));
+            if (currentTheme != null)
+            {
+                Application.Current.Resources.MergedDictionaries.Remove(currentTheme);
+            }
+
+            System.Diagnostics.Debug.WriteLine("After toggle:");
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                System.Diagnostics.Debug.WriteLine($" - {dictionary.Source}");
+            }
         }
+
+
+
+
 
 
         private void ModifyTheme(Uri newThemeUri)

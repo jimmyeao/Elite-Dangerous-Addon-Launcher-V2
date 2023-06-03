@@ -1,42 +1,54 @@
 ﻿<Window x:Class="Elite_Dangerous_Addon_Launcer_V2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:Elite_Dangerous_Addon_Launcer_V2"
-        Title="MainWindow" Height="500" Width="800">
+        xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+        Title="MainWindow" Height="450" Width="800"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
 
-
-
-    <DockPanel Background="Gray">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <md:BundledTheme BaseTheme="Light" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    
+    <DockPanel >
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10">
-            <TextBlock Text="Profile:" Foreground="Orange" VerticalAlignment="Center"/>
+           
+            <TextBlock Text="Profile:"  VerticalAlignment="Center"/>
             <ComboBox x:Name="Cb_Profiles" 
           ItemsSource="{Binding Profiles}"
           SelectedItem="{Binding CurrentProfile}"
           DisplayMemberPath="Name"
-          SelectionChanged="Cb_Profiles_SelectionChanged"/>
-
-
-
-
+          SelectionChanged="Cb_Profiles_SelectionChanged" Width="67"/>
             <CheckBox x:Name="DefaultCheckBox" Content="Default"  IsChecked="{Binding IsDefault, Mode=TwoWay}" Margin="10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked"/>
-            <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="76" Margin="10,0" Click="Bt_AddProfile_Click_1"/>
-            <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Width="92"  Margin="10,0" Click="Bt_RemoveProfile_Click_1"/>
-            <Button x:Name="Bt_AddApp" Content="Add App" Width="61"  Margin="10,0" Click="Bt_AddApp_Click_1"/>
-            <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}" Height="16" Checked="CloseAllAppsCheckbox_Checked" Unchecked="CloseAllAppsCheckbox_Unchecked"/>
+                    <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="112" Margin="10,0" Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}"/>
+                    <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Width="137"  Margin="10,0" Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}"/>
+                    <Button x:Name="Bt_AddApp" Content="Add App" Width="61"  Margin="10,0" Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}"/>
+            <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}" Height="22" Checked="CloseAllAppsCheckbox_Checked" Unchecked="CloseAllAppsCheckbox_Unchecked"/>
 
-            <Button x:Name="Btn_Launch" Content="Launch" Margin="10,0" Width="48" Click="Btn_Launch_Click"/>
-            <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"/>
+                    <Button x:Name="Btn_Launch" Content="Launch" Margin="10,0" Width="91" Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}"/>
+                    <Button Content="Toggle Theme" Click="ToggleThemeButton_Click" Style="{DynamicResource MaterialDesignRaisedButton}"/>
 
-        </StackPanel>
-        <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" />
+                </StackPanel>
+        <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" Height="214" />
         <ListView x:Name="AddonListView" ItemsSource="{Binding CurrentProfile.Apps}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="App Name" DisplayMemberBinding="{Binding Name}" />
-                    <GridViewColumn Header="App Path" DisplayMemberBinding="{Binding Path}" />
+                   
                     <GridViewColumn Header="Args" DisplayMemberBinding="{Binding Args}" />
-                    <GridViewColumn Header="Installation URL" DisplayMemberBinding="{Binding InstallationURL}" />
-                    <GridViewColumn Header="Exe Name" DisplayMemberBinding="{Binding ExeName}" />
+                   
                     <GridViewColumn Header="Web App URL" DisplayMemberBinding="{Binding WebAppURL}" />
                     <GridViewColumn Header="Enabled" DisplayMemberBinding="{Binding IsEnabled}" />
                 </GridView>
@@ -44,4 +56,5 @@
         </ListView>
 
     </DockPanel>
+
 </Window>

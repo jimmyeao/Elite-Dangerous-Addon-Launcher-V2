@@ -6,12 +6,13 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.0.53</AssemblyVersion>
-    <FileVersion>1.0.0.53</FileVersion>
+    <AssemblyVersion>1.0.0.74</AssemblyVersion>
+    <FileVersion>1.0.0.74</FileVersion>
+    <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
+    <PackageIcon>app.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="app.png" />
     <None Remove="Assets\4116972-middle.png" />
     <None Remove="Assets\app.png" />
     <None Remove="Assets\LockScreenLogo.scale-200.png" />
@@ -21,6 +22,10 @@
     <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <None Remove="Assets\StoreLogo.png" />
     <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="elite-dangerous-icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +56,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="app.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
