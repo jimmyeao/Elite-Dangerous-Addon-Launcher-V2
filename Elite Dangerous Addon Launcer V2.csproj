@@ -6,8 +6,8 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.0.47</AssemblyVersion>
-    <FileVersion>1.0.0.47</FileVersion>
+    <AssemblyVersion>1.0.0.50</AssemblyVersion>
+    <FileVersion>1.0.0.50</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

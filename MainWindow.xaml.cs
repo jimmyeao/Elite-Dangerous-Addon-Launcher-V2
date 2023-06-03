@@ -161,14 +161,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private void CloseAllAppsCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             AppState.Instance.CloseAllAppsOnExit = true;
-            _ = SaveProfilesAsync();
+            Properties.Settings.Default.CloseAllAppsOnExit = true;
+            Properties.Settings.Default.Save();
+           
         }
 
         private void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
         {
             AppState.Instance.CloseAllAppsOnExit = false;
-            _ = SaveProfilesAsync();
+            Properties.Settings.Default.CloseAllAppsOnExit = false;
+            Properties.Settings.Default.Save();
+           
         }
+
 
         private void DefaultCheckbox_Checked(object sender, RoutedEventArgs e)
         {
@@ -209,27 +214,18 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         public void UpdateListView()
         {
             // Assuming 'AddonListView' is the name of your ListView control
-            // Check if Profiles have been initialized and there's a selected profile
-            if (AppState.Instance.Profiles != null)
+            if (AppState.Instance.CurrentProfile != null)
             {
-                var selectedProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
-
-                if (selectedProfile != null)
-                {
-                    AddonListView.ItemsSource = selectedProfile.Apps;
-                }
-                else
-                {
-                    // No profile is selected. Clear the list view.
-                    AddonListView.ItemsSource = null;
-                }
+                // Set ListView's ItemsSource to the apps of the currently selected profile
+                AddonListView.ItemsSource = AppState.Instance.CurrentProfile.Apps;
             }
             else
             {
-                // Profiles is null. Clear the list view.
+                // No profile is selected. Clear the list view.
                 AddonListView.ItemsSource = null;
             }
         }
+
 
         private void Bt_AddApp_Click_1(object sender, RoutedEventArgs e)
         {
