@@ -73,6 +73,7 @@
             <DataGrid x:Name="AddonDataGrid"
             AutoGenerateColumns="False" 
             CanUserAddRows="False"
+                       IsReadOnly="True"
             ItemsSource="{Binding CurrentProfile.Apps}" 
             SelectedItem="{Binding SelectedApp}" 
              CellEditEnding="AddonDataGrid_CellEditEnding"
