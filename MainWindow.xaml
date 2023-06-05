@@ -68,7 +68,7 @@
         </StackPanel>
 
         <DockPanel Grid.Row="1">
-            <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="170" />
+            <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="128" VerticalAlignment="Top" />
 
             <DataGrid x:Name="AddonDataGrid"
             AutoGenerateColumns="False" 
