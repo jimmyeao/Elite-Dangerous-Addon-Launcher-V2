@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using GongSolutions.Wpf.DragDrop;
 using System.Windows.Media;
+using System.ComponentModel;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -33,6 +34,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             // Assign the event handler to the Loaded event
             this.Loaded += MainWindow_Loaded;
+           
 
             // Set the data context to AppState instance
             this.DataContext = AppState.Instance;
@@ -45,10 +47,18 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             LoadProfilesAsync();
+
         }
 
         #endregion Private Fields
 
+        private void MyApp_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MyApp.IsEnabled))
+            {
+                SaveProfilesAsync();
+            }
+        }
 
 
         #region Private Methods
@@ -82,6 +92,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     AppState.Instance.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault)
                         ?? AppState.Instance.Profiles.FirstOrDefault();
                     Cb_Profiles.SelectedItem = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
+                    SubscribeToAppEvents(AppState.Instance.CurrentProfile);
                 }
                 else
                 {
@@ -94,6 +105,36 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 // Handle other exceptions
             }
         }
+        private void SubscribeToAppEvents(Profile profile)
+        {
+            if (profile != null)
+            {
+                foreach (var app in profile.Apps)
+                {
+                    app.PropertyChanged += MyApp_PropertyChanged;
+                }
+            }
+        }
+        private void UnsubscribeFromAppEvents(Profile profile)
+        {
+            if (profile != null)
+            {
+                foreach (var app in profile.Apps)
+                {
+                    app.PropertyChanged -= MyApp_PropertyChanged;
+                }
+            }
+        }
+
+        // Somewhere where you handle profile change:
+        private void OnProfileChanged(Profile oldProfile, Profile newProfile)
+        {
+            UnsubscribeFromAppEvents(oldProfile);
+            SubscribeToAppEvents(newProfile);
+        }
+
+
+
 
         public async Task SaveProfilesAsync()
         {
