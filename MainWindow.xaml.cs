@@ -13,6 +13,7 @@ using System.Windows.Input;
 using GongSolutions.Wpf.DragDrop;
 using System.Windows.Media;
 using System.ComponentModel;
+using Elite_Dangerous_Addon_Launcer_V2.Properties;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -25,7 +26,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         // Store the position where the mouse button is clicked.
         private Point _startPoint;
-
+        private Settings settings;
         // The row that will be dragged.
         private DataGridRow _rowToDrag;
         public MainWindow()
@@ -47,9 +48,53 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             LoadProfilesAsync();
+            settings = await LoadSettingsAsync();
+            isDarkTheme = settings.Theme == "Dark";
+            ApplyTheme(settings.Theme);
+            AppState.Instance.CloseAllAppsOnExit = settings.CloseAllAppsOnExit;
 
         }
+        private void ApplyTheme(string themeName)
+        {
+            var darkThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
+            var lightThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
 
+            var themeUri = themeName == "Dark" ? darkThemeUri : lightThemeUri;
+
+            var existingTheme = Application.Current.Resources.MergedDictionaries.FirstOrDefault(d => d.Source == themeUri);
+            if (existingTheme == null)
+            {
+                existingTheme = new ResourceDictionary() { Source = themeUri };
+                Application.Current.Resources.MergedDictionaries.Add(existingTheme);
+            }
+
+            // Remove the current theme
+            var currentTheme = Application.Current.Resources.MergedDictionaries.FirstOrDefault(d => d.Source == (themeName == "Dark" ? lightThemeUri : darkThemeUri));
+            if (currentTheme != null)
+            {
+                Application.Current.Resources.MergedDictionaries.Remove(currentTheme);
+            }
+        }
+
+        private async Task<Settings> LoadSettingsAsync()
+        {
+            string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string settingsFilePath = Path.Combine(localFolder, "settings.json");
+
+            Settings settings;
+            if (File.Exists(settingsFilePath))
+            {
+                string json = await File.ReadAllTextAsync(settingsFilePath);
+                settings = JsonConvert.DeserializeObject<Settings>(json);
+            }
+            else
+            {
+                // If the settings file doesn't exist, use defaults
+                settings = new Settings { Theme = "Default" };
+            }
+
+            return settings;
+        }
         #endregion Private Fields
 
         private void MyApp_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -132,9 +177,14 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             UnsubscribeFromAppEvents(oldProfile);
             SubscribeToAppEvents(newProfile);
         }
+        private async Task SaveSettingsAsync(Settings settings)
+        {
+            string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string settingsFilePath = Path.Combine(localFolder, "settings.json");
 
-
-
+            string json = JsonConvert.SerializeObject(settings);
+            await File.WriteAllTextAsync(settingsFilePath, json);
+        }
 
         public async Task SaveProfilesAsync()
         {
@@ -277,19 +327,20 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        private void CloseAllAppsCheckbox_Checked(object sender, RoutedEventArgs e)
+        private async void CloseAllAppsCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             AppState.Instance.CloseAllAppsOnExit = true;
-            Properties.Settings.Default.CloseAllAppsOnExit = true;
-            Properties.Settings.Default.Save();
+            settings.CloseAllAppsOnExit = true;
+            await SaveSettingsAsync(settings);
         }
 
-        private void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        private async void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
         {
             AppState.Instance.CloseAllAppsOnExit = false;
-            Properties.Settings.Default.CloseAllAppsOnExit = false;
-            Properties.Settings.Default.Save();
+            settings.CloseAllAppsOnExit = false;
+            await SaveSettingsAsync(settings);
         }
+
 
         private void DefaultCheckbox_Checked(object sender, RoutedEventArgs e)
         {
@@ -356,6 +407,9 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
             isDarkTheme = !isDarkTheme;
 
+            settings.Theme = isDarkTheme ? "Dark" : "Light"; // <-- Add this
+            _ = SaveSettingsAsync(settings);
+
             var darkThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml");
             var lightThemeUri = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml");
 
@@ -386,6 +440,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             {
                 System.Diagnostics.Debug.WriteLine($" - {dictionary.Source}");
             }
+            _ = SaveSettingsAsync(settings);
         }
     }
 

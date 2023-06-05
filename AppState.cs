@@ -23,8 +23,24 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 return _instance;
             }
         }
+
         public ObservableCollection<MyApp> Apps { get; set; }
-        public bool CloseAllAppsOnExit { get; set; }
+
+        // Modify CloseAllAppsOnExit property to implement INotifyPropertyChanged
+        private bool _closeAllAppsOnExit;
+        public bool CloseAllAppsOnExit
+        {
+            get { return _closeAllAppsOnExit; }
+            set
+            {
+                if (_closeAllAppsOnExit != value)
+                {
+                    _closeAllAppsOnExit = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private ObservableCollection<Profile> _profiles;
         public ObservableCollection<Profile> Profiles
         {
@@ -66,6 +82,4 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-
-
 }
