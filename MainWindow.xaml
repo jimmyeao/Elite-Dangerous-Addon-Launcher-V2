@@ -55,11 +55,11 @@
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                 <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Width="131"
                     Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
-                <Button x:Name="Btn_Edit" Content="Edit App" Width="106"
+                <Button x:Name="Btn_Edit" Content="Edit App" Width="106" Tag="{Binding}"
                     Click="Btn_Edit_Click" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0"  />
                 <Button x:Name="Btn_Launch" Content="Launch" Width="121"
                       Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}"  Margin="0,0,10,0" />
-                        <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" 
+                <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" 
                   DataContext="{x:Static local:AppState.Instance}"
                   IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}" 
                   Height="22" Checked="CloseAllAppsCheckbox_Checked" Unchecked="CloseAllAppsCheckbox_Unchecked" />
@@ -68,17 +68,20 @@
         </StackPanel>
 
         <DockPanel Grid.Row="1">
-            <Image Source="/app.png" Width="200" DockPanel.Dock="Right" Margin="10,0" Height="214" />
+            <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="170" />
 
             <DataGrid x:Name="AddonDataGrid"
-                  CanUserAddRows="False"
-                  ItemsSource="{Binding CurrentProfile.Apps}" 
-                  CellEditEnding="AddonDataGrid_CellEditEnding"
-                  dd:DragDrop.IsDragSource="True" 
-                  dd:DragDrop.IsDropTarget="True" 
-                  dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}"
-                  AutoGenerateColumns="False" Height="323" Width="535">
-                <DataGrid.Columns>
+            AutoGenerateColumns="False" 
+            CanUserAddRows="False"
+            ItemsSource="{Binding CurrentProfile.Apps}" 
+            SelectedItem="{Binding SelectedApp}" 
+             CellEditEnding="AddonDataGrid_CellEditEnding"
+            dd:DragDrop.IsDragSource="True" 
+            dd:DragDrop.IsDropTarget="True" 
+            dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}"
+            VerticalAlignment="Stretch">
+             
+            <DataGrid.Columns>
                     <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
                     <DataGridTextColumn Header="Args" Binding="{Binding Args}" />
                     <DataGridTextColumn Header="Web App URL" Binding="{Binding WebAppURL}" />

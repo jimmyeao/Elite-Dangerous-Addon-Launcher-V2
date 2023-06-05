@@ -23,6 +23,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 return _instance;
             }
         }
+        private MyApp _selectedApp;
+        public MyApp SelectedApp
+        {
+            get { return _selectedApp; }
+            set
+            {
+                if (_selectedApp != value)
+                {
+                    _selectedApp = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public ObservableCollection<MyApp> Apps { get; set; }
 
