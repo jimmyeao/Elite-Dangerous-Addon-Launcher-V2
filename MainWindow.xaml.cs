@@ -35,7 +35,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             // Assign the event handler to the Loaded event
             this.Loaded += MainWindow_Loaded;
-           
+
 
             // Set the data context to AppState instance
             this.DataContext = AppState.Instance;
@@ -371,20 +371,20 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         private void Btn_Edit_Click(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is Button button)
+            Button button = (Button)sender;
+            MyApp appToEdit = button.CommandParameter as MyApp;
+
+            if (appToEdit != null)
             {
-                if (button.Tag is MyApp app)
-                {
-                    var addAppWindow = new AddApp()
-                    {
-                        MainPageReference = this,
-                        SelectedProfile = AppState.Instance.CurrentProfile,
-                        AppToEdit = app
-                    };
-                    addAppWindow.ShowDialog();
-                }
+                AddApp addAppWindow = new AddApp();
+                addAppWindow.AppToEdit = appToEdit; // Set the AppToEdit to the app you want to edit
+                addAppWindow.MainPageReference = this; // Assuming this is done from MainWindow, else replace 'this' with the instance of MainWindow
+
+                addAppWindow.ShowDialog();
             }
         }
+
+
 
         private MyApp JsonToMyApp(string jsonString)
         {
