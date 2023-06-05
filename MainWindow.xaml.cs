@@ -99,11 +99,12 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         private void MyApp_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MyApp.IsEnabled))
+            if (e.PropertyName == nameof(MyApp.IsEnabled) || e.PropertyName == nameof(MyApp.Order))
             {
                 SaveProfilesAsync();
             }
         }
+
 
 
         #region Private Methods

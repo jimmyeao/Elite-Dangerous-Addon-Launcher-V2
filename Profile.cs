@@ -59,6 +59,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         public Profile()
         {
             Apps = new ObservableCollection<MyApp>();
+            Apps.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Apps));
             DropHandler = new ProfileDropHandler(this);
         }
 
