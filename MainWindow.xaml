@@ -32,7 +32,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="2,10,2,2">
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
                     Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />

@@ -431,7 +431,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
             if (e.PropertyName == nameof(MyApp.IsEnabled) || e.PropertyName == nameof(MyApp.Order))
             {
-                SaveProfilesAsync();
+                _=SaveProfilesAsync();
             }
         }
 
