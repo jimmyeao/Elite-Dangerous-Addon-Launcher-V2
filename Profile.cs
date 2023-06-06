@@ -1,47 +1,38 @@
 ﻿using GongSolutions.Wpf.DragDrop;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 {
     public class Profile : INotifyPropertyChanged
     {
-        private string _name;
-        private bool _isDefault;
+        #region Private Fields
+
         private ObservableCollection<MyApp> _apps;
-        public IDropTarget DropHandler { get; private set; }
-        public string Name
+        private bool _isDefault;
+        private string _name;
+
+        #endregion Private Fields
+
+        #region Public Constructors
+
+        public Profile()
         {
-            get { return _name; }
-            set
-            {
-                if (_name != value)
-                {
-                    _name = value;
-                    OnPropertyChanged();
-                }
-            }
+            Apps = new ObservableCollection<MyApp>();
+            Apps.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Apps));
+            DropHandler = new ProfileDropHandler(this);
         }
 
-        public bool IsDefault
-        {
-            get { return _isDefault; }
-            set
-            {
-                if (_isDefault != value)
-                {
-                    _isDefault = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        #endregion Public Constructors
+
+        #region Public Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion Public Events
+
+        #region Public Properties
 
         public ObservableCollection<MyApp> Apps
         {
@@ -56,22 +47,43 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        public Profile()
+        public IDropTarget DropHandler { get; private set; }
+
+        public bool IsDefault
         {
-            Apps = new ObservableCollection<MyApp>();
-            Apps.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Apps));
-            DropHandler = new ProfileDropHandler(this);
+            get { return _isDefault; }
+            set
+            {
+                if (_isDefault != value)
+                {
+                    _isDefault = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion Public Properties
+
+        #region Protected Methods
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        #endregion Protected Methods
     }
-
-
-   
-
-
 }

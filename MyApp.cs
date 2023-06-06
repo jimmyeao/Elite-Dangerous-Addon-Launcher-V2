@@ -1,60 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 {
     public class MyApp : INotifyPropertyChanged
     {
-        private string _name;
-        private string _path;
-        private string _args;
-        private string _installationURL;
-        private string _exeName;
-        private string _webAppURL;
-        private bool _isEnabled;
-        private int _order;
-        public int Order
-        {
-            get { return _order; }
-            set
-            {
-                if (_order != value)
-                {
-                    _order = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Name
-        {
-            get { return _name; }
-            set
-            {
-                if (_name != value)
-                {
-                    _name = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        #region Private Fields
 
-        public string Path
-        {
-            get { return _path; }
-            set
-            {
-                if (_path != value)
-                {
-                    _path = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        private string _args;
+        private string _exeName;
+        private string _installationURL;
+        private bool _isEnabled;
+        private string _name;
+        private int _order;
+        private string _path;
+        private string _webAppURL;
+
+        #endregion Private Fields
+
+        #region Public Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion Public Events
+
+        #region Public Properties
 
         public string Args
         {
@@ -64,19 +34,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 if (_args != value)
                 {
                     _args = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string InstallationURL
-        {
-            get { return _installationURL; }
-            set
-            {
-                if (_installationURL != value)
-                {
-                    _installationURL = value;
                     OnPropertyChanged();
                 }
             }
@@ -95,14 +52,14 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        public string WebAppURL
+        public string InstallationURL
         {
-            get { return _webAppURL; }
+            get { return _installationURL; }
             set
             {
-                if (_webAppURL != value)
+                if (_installationURL != value)
                 {
-                    _webAppURL = value;
+                    _installationURL = value;
                     OnPropertyChanged();
                 }
             }
@@ -121,13 +78,67 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int Order
+        {
+            get { return _order; }
+            set
+            {
+                if (_order != value)
+                {
+                    _order = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string Path
+        {
+            get { return _path; }
+            set
+            {
+                if (_path != value)
+                {
+                    _path = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string WebAppURL
+        {
+            get { return _webAppURL; }
+            set
+            {
+                if (_webAppURL != value)
+                {
+                    _webAppURL = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        #endregion Public Properties
+
+        #region Protected Methods
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        #endregion Protected Methods
     }
-
-
-
 }
