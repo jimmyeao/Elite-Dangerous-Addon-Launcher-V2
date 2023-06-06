@@ -14,6 +14,7 @@ using GongSolutions.Wpf.DragDrop;
 using System.Windows.Media;
 using System.ComponentModel;
 using Elite_Dangerous_Addon_Launcer_V2.Properties;
+using System.Diagnostics;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -109,9 +110,84 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         #region Private Methods
 
-        public async Task LaunchApp(MyApp app)
+
+        private void LaunchApp(MyApp app) // function to launch enabled applications
         {
+            // set up a list to track which apps we launched
+
+            // different apps have different args, so lets set up a string to hold them
+            string args;
+            // TARGET requires a path to a script, if that path has spaces, we need to quote them - set a string called quote we can use to top and tail
+            const string quote = "\"";
+            var path = $"{app.Path}/{app.ExeName}";
+            // are we launching TARGET? 
+            if (string.Equals(app.ExeName, "targetgui.exe", StringComparison.OrdinalIgnoreCase))
+            {
+                // -r is to specify a script
+                args = "-r " + quote + app.Args + quote;
+            }
+            else
+            {
+                // ok its not target, leave the arguments as is
+                args = app.Args;
+            }
+
+            if (File.Exists(path))      // worth checking the app we want to launch actually exists...
+            {
+                try
+                {
+                    var info = new ProcessStartInfo(path);
+                    info.Arguments = args;
+                    info.UseShellExecute = true;
+                    info.WorkingDirectory = app.Path;
+                    Process proc = Process.Start(info);
+                    proc.EnableRaisingEvents = true;
+                    // processList.Add(proc.ProcessName); <-- You'll need to define processList first
+                    if (proc.ProcessName == "EDLaunch")
+                    {
+                        proc.Exited += new EventHandler(ProcessExitHandler);
+                    }
+                    Thread.Sleep(50);
+                    proc.Refresh();
+                }
+                catch
+                {
+                    // oh dear, something went horribly wrong..
+                    UpdateStatus($"An error occurred trying to launch {app.Name}..");
+                }
+            }
+            else
+            {
+                // yeah, that path didn't exist...
+                // are we launching a web app?
+                if (!string.IsNullOrEmpty(app.WebAppURL))
+                {
+                    // ok, let's launch it in the default browser
+                    UpdateStatus("Launching " + app.Name);
+                    string target = app.WebAppURL;
+                    Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+                }
+                else
+                {
+                    UpdateStatus($"Unable to launch {app.Name}..");
+                }
+            }
+            UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
+            // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to define notifyIcon1 first
+            this.WindowState = WindowState.Minimized;
         }
+
+        // Define your ProcessExitHandler and UpdateStatus methods
+        private void ProcessExitHandler(object sender, EventArgs e)
+        {
+            // Define what happens when the process exits
+        }
+
+        private void UpdateStatus(string status)
+        {
+            // Define how you update the status in your application
+        }
+
 
         public async Task LoadProfilesAsync()
         {
@@ -274,7 +350,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             {
                 if (app.IsEnabled)
                 {
-                    _ = LaunchApp(app);
+                    LaunchApp(app);
                 }
             }
         }
