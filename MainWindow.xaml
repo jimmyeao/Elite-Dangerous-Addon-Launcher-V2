@@ -32,7 +32,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="2">
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="2,10,2,2">
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
                     Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
@@ -40,7 +40,7 @@
                     Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
                     Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
-                <TextBlock Text="Profile:" VerticalAlignment="Center" />
+                <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <ComboBox x:Name="Cb_Profiles" 
                       ItemsSource="{Binding Profiles}"
                       SelectedItem="{Binding CurrentProfile}"
@@ -78,8 +78,7 @@
              CellEditEnding="AddonDataGrid_CellEditEnding"
             dd:DragDrop.IsDragSource="True" 
             dd:DragDrop.IsDropTarget="True" 
-            dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}"
-            VerticalAlignment="Stretch">
+            dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" Height="329">
 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
