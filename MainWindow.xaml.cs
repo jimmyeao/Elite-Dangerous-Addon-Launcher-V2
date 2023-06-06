@@ -443,10 +443,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
 
         // Define your ProcessExitHandler and UpdateStatus methods
-        private void ProcessExitHandler(object sender, EventArgs e)
-        {
-            // Define what happens when the process exits
-        }
+
 
         private async Task SaveSettingsAsync(Settings settings)
         {
@@ -465,6 +462,55 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 {
                     app.PropertyChanged += MyApp_PropertyChanged;
                 }
+            }
+        }
+        private void ProcessExitHandler(object sender, EventArgs e)  //triggered when EDLaunch exits
+        {
+            // if EDLaunch has quit, does the user want us to kill all the apps?
+            if (AppState.Instance.CloseOnExit)
+            {
+                try
+                {
+                    foreach (string p in AppState.Instance.ProcessList)
+                    {
+                        foreach (Process process in Process.GetProcessesByName(p))
+                        {
+                            // Temp is a document which you need to kill.
+                            if (process.ProcessName.Contains(p))
+                                process.CloseMainWindow();
+                        }
+                    }
+                }
+                catch
+                {
+                    // if something went wrong, don't raise an exception
+                }
+                // doesn't seem to want to kill VoiceAttack nicely..
+                try
+                {
+                    Process[] procs = Process.GetProcessesByName("VoiceAttack");
+                    foreach (var proc in procs) { proc.Kill(); }        //sadly this means next time it starts, it will complain it was shutdown in an unclean fashion
+                }
+                catch
+                {
+                    // if something went wrong, don't raise an exception
+                }
+                // Elite Dangerous Odyssey Materials Helper is a little strange, let's deal with its multiple running processes..
+                try
+                {
+                    Process[] procs = Process.GetProcessesByName("Elite Dangerous Odyssey Materials Helper");
+                    foreach (var proc in procs) { proc.CloseMainWindow(); }
+                }
+                catch
+                {
+                    // if something went wrong, don't raise an exception
+                }
+                // sleep for 5 seconds then quit
+                for (int i = 5; i != 0; i--)
+                {
+                    Thread.Sleep(1000);
+                }
+                Environment.Exit(0);
             }
         }
 
