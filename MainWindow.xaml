@@ -1,9 +1,9 @@
-﻿<Window
+﻿<Window 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
     xmlns:local="clr-namespace:Elite_Dangerous_Addon_Launcer_V2"
-
+    x:Name="Main"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Elite_Dangerous_Addon_Launcer_V2.MainWindow"
@@ -43,7 +43,7 @@
     </Window.Resources>
 
     <Grid>
-      
+       
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -82,11 +82,11 @@
 
             </StackPanel>
         </StackPanel>
-
+       
         <DockPanel Grid.Row="1">
     
             <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="128" VerticalAlignment="Top" />
-
+            
             <DataGrid x:Name="AddonDataGrid"
     AutoGenerateColumns="False" 
     SelectionUnit="FullRow"
@@ -138,6 +138,12 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+            <!-- Version label, this should be at bottom-right of the Window -->
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Text="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='v{0}'}" />
+
+
         </DockPanel>
+       
     </Grid>
+
 </Window>

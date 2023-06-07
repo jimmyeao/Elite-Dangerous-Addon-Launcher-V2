@@ -6,10 +6,14 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.0.196</AssemblyVersion>
-    <FileVersion>1.0.0.196</FileVersion>
+    <AssemblyVersion>1.0.1.208</AssemblyVersion>
+    <FileVersion>1.0.1.208</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
     <PackageIcon>app.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</RepositoryUrl>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyOriginatorKeyFile>F:\OneDrive\Certificates\comododcodecertkey.key</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
