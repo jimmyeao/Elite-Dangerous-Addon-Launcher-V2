@@ -7,7 +7,8 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Elite_Dangerous_Addon_Launcer_V2.MainWindow"
-    Title="ED AddOn Helper" Height="450" Width="741"
+    Title="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
+        Height="450" Width="741"
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     TextElement.FontWeight="Regular"
     TextElement.FontSize="13"
@@ -138,10 +139,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-            <!-- Version label, this should be at bottom-right of the Window -->
-            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Text="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='v{0}'}" />
-
-
+           
         </DockPanel>
        
     </Grid>
