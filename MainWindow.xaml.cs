@@ -11,6 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -64,16 +66,27 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        public void Drop(IDropInfo dropInfo)
+        public Profile CurrentProfile { get; set; }
+        public List<Profile> Profiles { get; set; }
+
+        public List<Profile> OtherProfiles
         {
-            MyApp sourceItem = dropInfo.Data as MyApp;
-            MyApp targetItem = dropInfo.TargetItem as MyApp;
+            get
+            {
+                if (Profiles == null || CurrentProfile == null)
+                {
+                    return new List<Profile>();
+                }
 
-            int sourceIndex = AppState.Instance.CurrentProfile.Apps.IndexOf(sourceItem);
-            int targetIndex = AppState.Instance.CurrentProfile.Apps.IndexOf(targetItem);
-
-            AppState.Instance.CurrentProfile.Apps.Move(sourceIndex, targetIndex);
+                var otherProfiles = Profiles.Except(new List<Profile> { CurrentProfile }).ToList();
+                Debug.WriteLine($"OtherProfiles: {string.Join(", ", otherProfiles.Select(p => p.Name))}");
+                return otherProfiles;
+            }
         }
+
+
+
+
 
         public async Task LoadProfilesAsync()
         {
@@ -279,6 +292,21 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             settings.CloseAllAppsOnExit = true;
             await SaveSettingsAsync(settings);
         }
+        private void CopyToProfileSubMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the clicked MenuItem
+            var menuItem = (MenuItem)sender;
+
+            // Get the bounded MyApp item
+            var boundedApp = (MyApp)((MenuItem)e.OriginalSource).DataContext;
+
+            // Get the selected profile
+            var selectedProfile = (Profile)menuItem.Tag;
+
+            // Now you can copy boundedApp to selectedProfile.
+        }
+
+
 
         private async void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
         {
@@ -314,10 +342,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             _ = SaveProfilesAsync();
         }
 
-        private MyApp JsonToMyApp(string jsonString)
-        {
-            return JsonConvert.DeserializeObject<MyApp>(jsonString);
-        }
+       
 
         private void LaunchApp(MyApp app) // function to launch enabled applications
         {
@@ -436,15 +461,12 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        // Somewhere where you handle profile change:
+        // maybe redundant now
         private void OnProfileChanged(Profile oldProfile, Profile newProfile)
         {
             UnsubscribeFromAppEvents(oldProfile);
             SubscribeToAppEvents(newProfile);
         }
-
-        // Define your ProcessExitHandler and UpdateStatus methods
-
 
         private async Task SaveSettingsAsync(Settings settings)
         {
@@ -577,5 +599,55 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
 
         #endregion Private Methods
+        private DataGridRow GetDataGridRow(MenuItem menuItem)
+        {
+            DependencyObject obj = menuItem;
+            while (obj != null && obj.GetType() != typeof(DataGridRow))
+            {
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+            return obj as DataGridRow;
+        }
+
+        private void AddonDataGrid_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var dataGrid = (DataGrid)sender;
+            AppState.Instance.CurrentApp = (MyApp)dataGrid.SelectedItem;
+        }
+        private void DataGridRow_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var row = (DataGridRow)sender;
+            AppState.Instance.CurrentApp = (MyApp)row.DataContext;
+        }
+
+
+        private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem)e.OriginalSource;
+            var profile = (Profile)menuItem.DataContext;
+            var app = AppState.Instance.CurrentApp;
+            Debug.WriteLine($"Clicked on profile: {profile.Name}");
+
+            // Now you can use profile and app.
+            // Make sure to create a copy of app, not to use the same instance in multiple profiles.
+            var appCopy = new MyApp
+            {
+                Args = app.Args,
+                ExeName = app.ExeName,
+                InstallationURL = app.InstallationURL,
+                IsEnabled = app.IsEnabled,
+                Name = app.Name,
+                Order = app.Order,
+                Path = app.Path,
+                WebAppURL = app.WebAppURL
+            };
+
+            // Add the app to the profile
+            profile.Apps.Add(appCopy);
+        }
+
+
     }
+
+
 }

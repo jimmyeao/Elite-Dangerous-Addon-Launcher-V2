@@ -1,5 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
@@ -22,6 +24,18 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         #endregion Private Fields
 
         #region Private Constructors
+        public IEnumerable<Profile> OtherProfiles
+        {
+            get
+            {
+                if (Profiles == null || CurrentProfile == null)
+                {
+                    return Enumerable.Empty<Profile>();
+                }
+
+                return Profiles.Except(new[] { CurrentProfile });
+            }
+        }
 
         private AppState()
         {
@@ -66,6 +80,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
+        public MyApp CurrentApp { get; set; }
+
 
         public Profile CurrentProfile
         {
@@ -76,6 +92,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 {
                     _currentProfile = value;
                     OnPropertyChanged();
+                    // Notify that OtherProfiles may have changed when CurrentProfile changes
+                    OnPropertyChanged(nameof(OtherProfiles));
                 }
             }
         }
