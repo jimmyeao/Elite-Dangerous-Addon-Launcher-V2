@@ -612,12 +612,21 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private void AddonDataGrid_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var dataGrid = (DataGrid)sender;
-            AppState.Instance.CurrentApp = (MyApp)dataGrid.SelectedItem;
-        }
-        private void DataGridRow_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-        {
-            var row = (DataGridRow)sender;
-            AppState.Instance.CurrentApp = (MyApp)row.DataContext;
+            var originalSource = (DependencyObject)e.OriginalSource;
+
+            // Find the DataGridRow in the visual tree
+            while ((originalSource != null) && !(originalSource is DataGridRow))
+            {
+                originalSource = VisualTreeHelper.GetParent(originalSource);
+            }
+
+            // If we found a DataGridRow
+            if (originalSource is DataGridRow dataGridRow)
+            {
+                // Get the MyApp instance from the row
+                var app = (MyApp)dataGridRow.DataContext;
+                AppState.Instance.CurrentApp = app;
+            }
         }
 
 
@@ -630,20 +639,28 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             // Now you can use profile and app.
             // Make sure to create a copy of app, not to use the same instance in multiple profiles.
-            var appCopy = new MyApp
+            if (app != null)
             {
-                Args = app.Args,
-                ExeName = app.ExeName,
-                InstallationURL = app.InstallationURL,
-                IsEnabled = app.IsEnabled,
-                Name = app.Name,
-                Order = app.Order,
-                Path = app.Path,
-                WebAppURL = app.WebAppURL
-            };
+                Debug.WriteLine($"Clicked on app: {app.Name}");
+                var appCopy = new MyApp
+                {
+                    Args = app.Args,
+                    ExeName = app.ExeName,
+                    InstallationURL = app.InstallationURL,
+                    IsEnabled = app.IsEnabled,
+                    Name = app.Name,
+                    Order = app.Order,
+                    Path = app.Path,
+                    WebAppURL = app.WebAppURL
+                };
 
-            // Add the app to the profile
-            profile.Apps.Add(appCopy);
+                // Add the app to the profile
+                profile.Apps.Add(appCopy);
+                _ = SaveProfilesAsync();
+            }else
+            {
+               Debug.WriteLine("No app selected");
+            }
         }
 
 

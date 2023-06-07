@@ -20,7 +20,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Orange.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepOrange.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
@@ -88,28 +88,27 @@
             <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="128" VerticalAlignment="Top" />
 
             <DataGrid x:Name="AddonDataGrid"
-                AutoGenerateColumns="False" 
-                CanUserAddRows="False"
-                IsReadOnly="True"
-                ItemsSource="{Binding CurrentProfile.Apps}" 
-                SelectedItem="{Binding SelectedApp}" 
-                CellEditEnding="AddonDataGrid_CellEditEnding"
-                dd:DragDrop.IsDragSource="True" 
-                dd:DragDrop.IsDropTarget="True" 
-                dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
-                Height="329"
-                Style="{StaticResource MaterialDesignDataGrid}"
-                ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
-
+    AutoGenerateColumns="False" 
+    SelectionUnit="FullRow"
+    CanUserAddRows="False"
+    IsReadOnly="True"
+    GridLinesVisibility="None"
+    HorizontalGridLinesBrush="Transparent"
+    ItemsSource="{Binding CurrentProfile.Apps}" 
+    SelectedItem="{Binding SelectedApp}" 
+    CellEditEnding="AddonDataGrid_CellEditEnding"
+    dd:DragDrop.IsDragSource="True" 
+    dd:DragDrop.IsDropTarget="True" 
+    dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
+    Height="329"
+    Style="{StaticResource MaterialDesignDataGrid}"
+    ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
 
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
                         <Setter Property="ContextMenu" Value="{StaticResource myContextMenu}"/>
-                        <EventSetter Event="ContextMenuOpening" Handler="DataGridRow_ContextMenuOpening" />
                     </Style>
                 </DataGrid.RowStyle>
-
-
 
 
                 <DataGrid.Columns>
