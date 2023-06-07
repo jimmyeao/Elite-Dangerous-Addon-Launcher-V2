@@ -28,7 +28,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private bool isDarkTheme = false;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         private Settings settings;
-
+        public List<string> processList = new List<string>();
         #endregion Private Fields
 
         #region Public Constructors
@@ -350,6 +350,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     info.WorkingDirectory = app.Path;
                     Process proc = Process.Start(info);
                     proc.EnableRaisingEvents = true;
+                    processList.Add(proc.ProcessName);
                     // processList.Add(proc.ProcessName); <-- You'll need to define processList first
                     if (proc.ProcessName == "EDLaunch")
                     {
@@ -466,12 +467,17 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
         private void ProcessExitHandler(object sender, EventArgs e)  //triggered when EDLaunch exits
         {
+            bool closeAllApps = false;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                closeAllApps = CloseAllAppsCheckbox.IsChecked == true;
+            });
             // if EDLaunch has quit, does the user want us to kill all the apps?
-            if (AppState.Instance.CloseOnExit)
+            if (closeAllApps)
             {
                 try
                 {
-                    foreach (string p in AppState.Instance.ProcessList)
+                    foreach (string p in processList)
                     {
                         foreach (Process process in Process.GetProcessesByName(p))
                         {
