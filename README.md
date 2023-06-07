@@ -1,1 +1,1 @@
-# Elite Dangerous Addon Launcer V2
+# Elite Dangerous Addon Launcher V2

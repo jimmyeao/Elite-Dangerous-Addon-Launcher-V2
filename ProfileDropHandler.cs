@@ -1,22 +1,26 @@
 ﻿using GongSolutions.Wpf.DragDrop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using GongSolutions.Wpf.DragDrop;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 {
     public class ProfileDropHandler : IDropTarget
     {
+        #region Private Fields
+
         private Profile _profile;
+
+        #endregion Private Fields
+
+        #region Public Constructors
 
         public ProfileDropHandler(Profile profile)
         {
             _profile = profile;
         }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         public void DragOver(IDropInfo dropInfo)
         {
@@ -51,5 +55,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
+
+        #endregion Public Methods
     }
 }

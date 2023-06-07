@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Elite_Dangerous_Addon_Launcer_V2"
     Title="Add App"
-    Width="500" 
-    Height="600"
+    Width="521" 
+    Height="273"
      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -28,26 +28,43 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Content="Application Name"/>
-            <TextBox x:Name="Tb_App_Name" Grid.Row="1" Margin="20,15,20,0" VerticalAlignment="Top"/>
-            <Label Grid.Row="2" Content="Application Path"/>
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="20,20,20,0" VerticalAlignment="Top">
-                <TextBox x:Name="Tb_AppPath" Width="342" Height="28"/>
-                <Button x:Name="Bt_BrowsePath" Content="Browse.." VerticalAlignment="Bottom" Click="Bt_BrowsePath_Click" Width="92"/>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" Content="Application Name" Margin="10,10,0,0"/>
+            <TextBox x:Name="Tb_App_Name" Grid.Row="0" Grid.Column="1" Margin="10,10,0,0" Width="250" HorizontalAlignment="Left"/>
+
+            <Label Grid.Row="1" Grid.Column="0" Content="Application Path" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
+                <TextBox x:Name="Tb_AppPath" Width="250" Margin="0,0,10,0"/>
+                <Button x:Name="Bt_BrowsePath" Content="Browse.." Click="Bt_BrowsePath_Click"/>
             </StackPanel>
-            <Label Grid.Row="4" Content="Application Arguments"/>
-            <TextBox x:Name="Tb_App_Args" Grid.Row="5" Margin="20,5,20,0" VerticalAlignment="Top" Height="30"/>
-            <Label Grid.Row="6" Content="Installation URL"/>
-            <TextBox x:Name="Tb_InstallationURL" Grid.Row="7" Margin="20,20,20,0" VerticalAlignment="Top"/>
-            <Label Grid.Row="8" Content="Executable Name"/>
-            <TextBox x:Name="Tb_AppExeName" Grid.Row="9" Margin="20,20,20,0" VerticalAlignment="Top"/>
-            <Label Grid.Row="10" Content="WebApp URL"/>
-            <TextBox x:Name="Tb_WebApURL" Grid.Row="11" Margin="20,20,20,0" VerticalAlignment="Top"/>
-            <Button x:Name="button1" Grid.Row="10" Content="Save.." Margin="16,53,407,0" VerticalAlignment="Top" Click="addApp"/>
-            <Button x:Name="button2" Grid.Row="10" Content="Cancel" Margin="124,53,298,0" VerticalAlignment="Top" Click="cancelButton"/>
-            <CheckBox x:Name="Cb_Enable" Grid.Row="10" Content="Enable?" Margin="16,103,407,0" VerticalAlignment="Top"/>
+
+            <Label Grid.Row="2" Grid.Column="0" Content="Application Args" Margin="10,0,0,0"/>
+            <TextBox x:Name="Tb_App_Args" Grid.Row="2" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" Width="250"/>
+
+            <Label Grid.Row="3" Grid.Column="0" Content="Installation URL" Margin="10,0,0,0"/>
+            <TextBox x:Name="Tb_InstallationURL" Grid.Row="3" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" Width="250"/>
+
+            <Label Grid.Row="4" Grid.Column="0" Content="Executable Name" Margin="10,0,0,0"/>
+            <TextBox x:Name="Tb_AppExeName" Grid.Row="4" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" Width="250"/>
+
+            <Label Grid.Row="5" Grid.Column="0" Content="WebApp URL" Margin="10,0,0,0"/>
+            <TextBox x:Name="Tb_WebApURL" Grid.Row="5" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Left" Width="250"/>
+
+            <CheckBox x:Name="Cb_Enable" Grid.Row="6" Grid.Column="0" Content="Enable?" Margin="10,10,0,0" HorizontalAlignment="Left" Width="103"/>
+
+            <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="button1" Content="Save.." Click="addApp"/>
+                <Button x:Name="button2" Content="Cancel" Margin="10,0,0,0" Click="cancelButton"/>
+            </StackPanel>
+
             <TextBox x:Name="Tb_AppFileToken" Visibility="Collapsed"/>
 
         </Grid>

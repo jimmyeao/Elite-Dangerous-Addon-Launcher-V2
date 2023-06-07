@@ -20,19 +20,36 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <materialDesign:BundledTheme BaseTheme="Light" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Orange.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepOrange.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <ContextMenu x:Key="myContextMenu">
+                <MenuItem Header="Copy to profile..."
+        ItemsSource="{Binding Source={x:Static local:AppState.Instance}, Path=OtherProfiles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Name}"/>
+                            <EventSetter Event="Click" Handler="ProfileMenuItem_Click"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </ContextMenu>
+
         </ResourceDictionary>
+      
     </Window.Resources>
 
     <Grid>
+      
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="2,10,2,2">
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
                     Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
@@ -67,20 +84,35 @@
         </StackPanel>
 
         <DockPanel Grid.Row="1">
+    
             <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="128" VerticalAlignment="Top" />
 
             <DataGrid x:Name="AddonDataGrid"
-            AutoGenerateColumns="False" 
-            CanUserAddRows="False"
-                       IsReadOnly="True"
-            ItemsSource="{Binding CurrentProfile.Apps}" 
-            SelectedItem="{Binding SelectedApp}" 
-             CellEditEnding="AddonDataGrid_CellEditEnding"
-            dd:DragDrop.IsDragSource="True" 
-            dd:DragDrop.IsDropTarget="True" 
-            dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" Height="329">
+    AutoGenerateColumns="False" 
+    SelectionUnit="FullRow"
+    CanUserAddRows="False"
+    IsReadOnly="True"
+    GridLinesVisibility="None"
+    HorizontalGridLinesBrush="Transparent"
+    ItemsSource="{Binding CurrentProfile.Apps}" 
+    SelectedItem="{Binding SelectedApp}" 
+    CellEditEnding="AddonDataGrid_CellEditEnding"
+    dd:DragDrop.IsDragSource="True" 
+    dd:DragDrop.IsDropTarget="True" 
+    dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
+    Height="329"
+    Style="{StaticResource MaterialDesignDataGrid}"
+    ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+                        <Setter Property="ContextMenu" Value="{StaticResource myContextMenu}"/>
+                    </Style>
+                </DataGrid.RowStyle>
+
 
                 <DataGrid.Columns>
+                  
                     <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
 
                     <DataGridTemplateColumn Header="Enabled">
