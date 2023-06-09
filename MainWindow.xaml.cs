@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,7 +18,7 @@ using System.Windows.Media;
 namespace Elite_Dangerous_Addon_Launcer_V2
 
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         #region Private Fields
 
@@ -26,13 +27,25 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         // Store the position where the mouse button is clicked.
         private Point _startPoint;
-
+        private string _appVersion;
         private bool isDarkTheme = false;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         private Settings settings;
-        public List<string> processList = new List<string>();
-        #endregion Private Fields
+        public List<string> processList = new List<string>(); private string _applicationVersion;
 
+        #endregion Private Fields
+        public string ApplicationVersion
+        {
+            get { return _appVersion; }
+            set
+            {
+                if (_appVersion != value)
+                {
+                    _appVersion = value;
+                    OnPropertyChanged(nameof(ApplicationVersion));
+                }
+            }
+        }
         #region Public Constructors
 
         public MainWindow()
@@ -41,7 +54,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             // Assign the event handler to the Loaded event
             this.Loaded += MainWindow_Loaded;
-
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            ApplicationVersion = $"{version.Major}.{version.Minor}.{version.Build}"; // format as desired
             // Set the data context to AppState instance
             this.DataContext = AppState.Instance;
             if (Properties.Settings.Default.CloseAllAppsOnExit)
@@ -53,7 +67,11 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         #endregion Public Constructors
 
         #region Public Methods
-
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         public void DragOver(IDropInfo dropInfo)
         {
             MyApp sourceItem = dropInfo.Data as MyApp;
