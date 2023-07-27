@@ -51,7 +51,11 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         public MainWindow()
         {
             InitializeComponent();
-
+            this.SizeToContent = SizeToContent.Manual;
+            this.Width = Properties.Settings.Default.MainWindowSize.Width;
+            this.Height = Properties.Settings.Default.MainWindowSize.Height;
+            this.Top = Properties.Settings.Default.MainWindowLocation.Y;
+            this.Left = Properties.Settings.Default.MainWindowLocation.X;
             // Assign the event handler to the Loaded event
             this.Loaded += MainWindow_Loaded;
             var version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -63,7 +67,24 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
             }
         }
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
 
+            if (Properties.Settings.Default.MainWindowLocation == new System.Drawing.Point(0, 0))
+            {
+                this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
+            Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
+            Properties.Settings.Default.Save();
+        }
         #endregion Public Constructors
 
         #region Public Methods

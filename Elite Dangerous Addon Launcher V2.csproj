@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AssemblyVersion>1.0.1.219</AssemblyVersion>
+    <FileVersion>1.0.1.219</FileVersion>
+    <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
+    <PackageIcon>app.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</RepositoryUrl>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyOriginatorKeyFile>F:\OneDrive\Certificates\comododcodecertkey.key</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\4116972-middle.png" />
+    <None Remove="Assets\app.png" />
+    <None Remove="Assets\LockScreenLogo.scale-200.png" />
+    <None Remove="Assets\SplashScreen.scale-200.png" />
+    <None Remove="Assets\Square150x150Logo.scale-200.png" />
+    <None Remove="Assets\Square44x44Logo.scale-200.png" />
+    <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <None Remove="Assets\StoreLogo.png" />
+    <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="elite-dangerous-icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
+    <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="app.png" />
+    <Resource Include="Assets\4116972-middle.png" />
+    <Resource Include="Assets\app.png" />
+    <Resource Include="Assets\LockScreenLogo.scale-200.png" />
+    <Resource Include="Assets\SplashScreen.scale-200.png" />
+    <Resource Include="Assets\Square150x150Logo.scale-200.png" />
+    <Resource Include="Assets\Square44x44Logo.scale-200.png" />
+    <Resource Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Resource Include="Assets\StoreLogo.png" />
+    <Resource Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="app.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>
