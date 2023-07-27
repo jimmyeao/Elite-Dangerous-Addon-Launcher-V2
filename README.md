@@ -31,10 +31,14 @@ Note the Close Apps on Exit checkbox, this will attempt to close all the apps it
 # Tips
 
  You can drag and drop items to re-order them.
- 
+
  You can right click items to add them to another profile:
  
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/fb32f589-412b-45ed-925c-4743959227e6)
 
+NOTE For some reason, windows defender is flagging this as a Trojan, probably because the code executes other programs - it has been submitted to Microsoft for analysis, and I have scanned it with Virus Total:
+
+ Virus total report:
+ https://www.virustotal.com/gui/file/24522769155d8443cd7f9d2ca7469bd6b6548ffe00515d7c3b792adda36ef6ce?nocache=1
 
 
