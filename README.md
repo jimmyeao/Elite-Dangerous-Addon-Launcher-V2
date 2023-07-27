@@ -18,9 +18,11 @@ Now you can add some apps by hitting the Add App button:
 
 Remeber to tick the enabled button if you want it enabled. Dont worry if you forget, you can change it later!
 If you use T.A.R.G.E.T or any other software that requires arguments (e.g. /vr for running elite in VR) just add them in:
+
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/ceab7b31-f512-406e-89b3-89730da3e8d8)
 
 You can also add websites:
+
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/62933d59-a249-475a-abd7-7ea01662a23f)
 
 
