@@ -8,7 +8,7 @@
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Elite_Dangerous_Addon_Launcer_V2.MainWindow"
     Title="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
-        Height="450" Width="741"
+    Height="450" Width="741"
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     TextElement.FontWeight="Regular"
     TextElement.FontSize="13"
@@ -29,7 +29,7 @@
 
             <ContextMenu x:Key="myContextMenu">
                 <MenuItem Header="Copy to profile..."
-        ItemsSource="{Binding Source={x:Static local:AppState.Instance}, Path=OtherProfiles}">
+                          ItemsSource="{Binding Source={x:Static local:AppState.Instance}, Path=OtherProfiles}">
                     <MenuItem.ItemContainerStyle>
                         <Style TargetType="{x:Type MenuItem}">
                             <Setter Property="Header" Value="{Binding Name}"/>
@@ -38,13 +38,10 @@
                     </MenuItem.ItemContainerStyle>
                 </MenuItem>
             </ContextMenu>
-
         </ResourceDictionary>
-      
     </Window.Resources>
 
     <Grid>
-       
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -53,57 +50,58 @@
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
-                    Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button x:Name="Bt_AddApp" Content="Add App" Width="106" Margin="10,0"
-                    Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
-                    Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
+                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
                 <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <ComboBox x:Name="Cb_Profiles" 
-                      ItemsSource="{Binding Profiles}"
-                      SelectedItem="{Binding CurrentProfile}"
-                      DisplayMemberPath="Name"
-                      SelectionChanged="Cb_Profiles_SelectionChanged"
-                      Width="137" />
+                          ItemsSource="{Binding Profiles}"
+                          SelectedItem="{Binding CurrentProfile}"
+                          DisplayMemberPath="Name"
+                          SelectionChanged="Cb_Profiles_SelectionChanged"
+                          Width="137" />
                 <CheckBox x:Name="DefaultCheckBox" Content="Default"  
-                      IsChecked="{Binding IsDefault, Mode=TwoWay}" 
-                      Margin="10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
+                          IsChecked="{Binding IsDefault, Mode=TwoWay}" 
+                          Margin="10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                 <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Width="131"
-                    Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
-                
-                <Button x:Name="Btn_Launch" Content="Launch" Width="106"
-                      Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}"  Margin="0,0,10,0" />
-                <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" 
-                  DataContext="{x:Static local:AppState.Instance}"
-                  IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}" 
-                  Height="22" Checked="CloseAllAppsCheckbox_Checked" Unchecked="CloseAllAppsCheckbox_Unchecked" />
+                        Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
 
+                <Button x:Name="Btn_Launch" Content="Launch" Width="106"
+                        Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}"  Margin="0,0,10,0" />
+                <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit" 
+                          DataContext="{x:Static local:AppState.Instance}"
+                          IsChecked="{Binding CloseAllApps, Mode=TwoWay}"
+                          VerticalAlignment="Center" />
             </StackPanel>
         </StackPanel>
-       
-        <DockPanel Grid.Row="1">
-    
-            <Image Source="/app.png" Width="125" DockPanel.Dock="Right" Margin="10,0" Height="128" VerticalAlignment="Top" />
-            
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
             <DataGrid x:Name="AddonDataGrid"
-    AutoGenerateColumns="False" 
-    SelectionUnit="FullRow"
-    CanUserAddRows="False"
-    IsReadOnly="True"
-    GridLinesVisibility="None"
-    HorizontalGridLinesBrush="Transparent"
-    ItemsSource="{Binding CurrentProfile.Apps}" 
-    SelectedItem="{Binding SelectedApp}" 
-    CellEditEnding="AddonDataGrid_CellEditEnding"
-    dd:DragDrop.IsDragSource="True" 
-    dd:DragDrop.IsDropTarget="True" 
-    dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
-    Height="329"
-    Style="{StaticResource MaterialDesignDataGrid}"
-    ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
+          Grid.Column="0"
+          AutoGenerateColumns="False" 
+          SelectionUnit="FullRow"
+          CanUserAddRows="False"
+          IsReadOnly="True"
+          GridLinesVisibility="None"
+          HorizontalGridLinesBrush="Transparent"
+          ItemsSource="{Binding CurrentProfile.Apps}" 
+          SelectedItem="{Binding SelectedApp}" 
+          CellEditEnding="AddonDataGrid_CellEditEnding"
+          dd:DragDrop.IsDragSource="True" 
+          dd:DragDrop.IsDropTarget="True" 
+          dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
+          Style="{StaticResource MaterialDesignDataGrid}"
+          ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
 
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
@@ -111,11 +109,8 @@
                     </Style>
                 </DataGrid.RowStyle>
 
-
                 <DataGrid.Columns>
-                  
                     <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
-
                     <DataGridTemplateColumn Header="Enabled">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -139,9 +134,14 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-           
-        </DockPanel>
-       
-    </Grid>
 
+
+            <Image Source="/app.png" 
+                   Grid.Column="1" 
+                   Width="125" 
+                   Margin="10,0" 
+                   Height="128" 
+                   VerticalAlignment="Top" />
+        </Grid>
+    </Grid>
 </Window>
