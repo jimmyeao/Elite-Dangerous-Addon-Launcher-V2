@@ -6,8 +6,8 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcer_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.0.1.216</AssemblyVersion>
-    <FileVersion>1.0.1.216</FileVersion>
+    <AssemblyVersion>1.0.1.219</AssemblyVersion>
+    <FileVersion>1.0.1.219</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
     <PackageIcon>app.png</PackageIcon>
     <PackageProjectUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</PackageProjectUrl>
