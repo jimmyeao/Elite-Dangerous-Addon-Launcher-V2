@@ -36,7 +36,8 @@ Note the Close Apps on Exit checkbox, this will attempt to close all the apps it
 
  You can right click items to add them to another profile:
  
-![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/fb32f589-412b-45ed-925c-4743959227e6)
+![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/5b1fb3ac-b746-4917-a2e9-c9ba75db6403)
+
 
 NOTE For some reason, windows defender was flagging this as a Trojan, probably because the code executes other programs - it has been submitted to Microsoft for analysis:
 
