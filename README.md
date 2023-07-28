@@ -38,8 +38,13 @@ Note the Close Apps on Exit checkbox, this will attempt to close all the apps it
  
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/5b1fb3ac-b746-4917-a2e9-c9ba75db6403)
 
+You can pass command line arguments - create a shortcut and add
+/profile="profilename" /autolaunch
+to automatically load a profile and launch the apps. Please note, if you get the profile name wrong, the app will just exit!
 
-NOTE For some reason, windows defender was flagging this as a Trojan, probably because the code executes other programs - it has been submitted to Microsoft for analysis:
+![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/89ced4d2-1070-4a69-b4bf-aaed3f05cca9)
+
+NOTE For some reason, windows defender was flagging this as a Trojan, probably because the code executes other programs - it has been submitted to Microsoft for analysis and shown tro be clean:
 
 https://www.microsoft.com/en-us/wdsi/submission/67cb841b-2cdd-445e-8f35-32f5d27667e1
 
