@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
@@ -22,18 +21,26 @@ namespace Elite_Dangerous_Addon_Launcer_V2
     {
         #region Private Fields
 
+        public List<string> processList = new List<string>();
+
+        private string _applicationVersion;
+
+        private string _appVersion;
+
         // The row that will be dragged.
         private DataGridRow _rowToDrag;
 
         // Store the position where the mouse button is clicked.
         private Point _startPoint;
-        private string _appVersion;
+
         private bool isDarkTheme = false;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         private Settings settings;
-        public List<string> processList = new List<string>(); private string _applicationVersion;
 
         #endregion Private Fields
+
+        #region Public Properties
+
         public string ApplicationVersion
         {
             get { return _appVersion; }
@@ -46,11 +53,21 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
+
+        #endregion Public Properties
+
         #region Public Constructors
 
         public MainWindow()
         {
             InitializeComponent();
+            // Copy user settings from previous application version if necessary
+            if (Properties.Settings.Default.UpdateSettings)
+            {
+                Properties.Settings.Default.Upgrade();
+                Properties.Settings.Default.UpdateSettings = false;
+                Properties.Settings.Default.Save();
+            }
             this.SizeToContent = SizeToContent.Manual;
             this.Width = Properties.Settings.Default.MainWindowSize.Width;
             this.Height = Properties.Settings.Default.MainWindowSize.Height;
@@ -67,6 +84,16 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
             }
         }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+
+            Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
+            Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
+            Properties.Settings.Default.Save();
+        }
+
         protected override void OnContentRendered(EventArgs e)
         {
             base.OnContentRendered(e);
@@ -77,36 +104,13 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-
-            Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
-            Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
-            Properties.Settings.Default.Save();
-        }
         #endregion Public Constructors
 
         #region Public Methods
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public void DragOver(IDropInfo dropInfo)
-        {
-            MyApp sourceItem = dropInfo.Data as MyApp;
-            MyApp targetItem = dropInfo.TargetItem as MyApp;
 
-            if (sourceItem != null && targetItem != null)
-            {
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
-                dropInfo.Effects = DragDropEffects.Move;
-            }
-        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Profile CurrentProfile { get; set; }
-        public List<Profile> Profiles { get; set; }
 
         public List<Profile> OtherProfiles
         {
@@ -123,9 +127,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
+        public List<Profile> Profiles { get; set; }
 
+        public void DragOver(IDropInfo dropInfo)
+        {
+            MyApp sourceItem = dropInfo.Data as MyApp;
+            MyApp targetItem = dropInfo.TargetItem as MyApp;
 
-
+            if (sourceItem != null && targetItem != null)
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
+        }
 
         public async Task LoadProfilesAsync()
         {
@@ -193,14 +207,18 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         #endregion Public Methods
 
         #region Private Methods
 
         private void AddonDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            // Write the MyApp instances to the data source here, e.g.:
-            // SaveAppStateToFile();
+            // Write the MyApp instances to the data source here, e.g.: SaveAppStateToFile();
         }
 
         private void ApplyTheme(string themeName)
@@ -229,11 +247,15 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
             if (AppState.Instance.CurrentProfile != null)
             {
+
                 AddApp addAppWindow = new AddApp()
                 {
                     MainPageReference = this,
                     SelectedProfile = AppState.Instance.CurrentProfile,
                 };
+                // Set the owner and startup location
+                addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
+                addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 addAppWindow.Show();
                 AddonDataGrid.ItemsSource = AppState.Instance.CurrentProfile.Apps;
             }
@@ -246,6 +268,10 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         private void Bt_AddProfile_Click_1(object sender, RoutedEventArgs e)
         {
             var window = new AddProfileDialog();
+            // Center the dialog within the owner window
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.Owner = this;  // Or replace 'this' with reference to the main window
+
 
             if (window.ShowDialog() == true)
             {
@@ -282,7 +308,9 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 AddApp addAppWindow = new AddApp();
                 addAppWindow.AppToEdit = appToEdit; // Set the AppToEdit to the app you want to edit
                 addAppWindow.MainPageReference = this; // Assuming this is done from MainWindow, else replace 'this' with the instance of MainWindow
-
+                 // Set the owner and startup location
+                addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
+                addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 addAppWindow.ShowDialog();
             }
         }
@@ -331,6 +359,14 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             settings.CloseAllAppsOnExit = true;
             await SaveSettingsAsync(settings);
         }
+
+        private async void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AppState.Instance.CloseAllAppsOnExit = false;
+            settings.CloseAllAppsOnExit = false;
+            await SaveSettingsAsync(settings);
+        }
+
         private void CopyToProfileSubMenuItem_Click(object sender, RoutedEventArgs e)
         {
             // Get the clicked MenuItem
@@ -343,15 +379,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             var selectedProfile = (Profile)menuItem.Tag;
 
             // Now you can copy boundedApp to selectedProfile.
-        }
-
-
-
-        private async void CloseAllAppsCheckbox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            AppState.Instance.CloseAllAppsOnExit = false;
-            settings.CloseAllAppsOnExit = false;
-            await SaveSettingsAsync(settings);
         }
 
         private void DefaultCheckbox_Checked(object sender, RoutedEventArgs e)
@@ -381,15 +408,14 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             _ = SaveProfilesAsync();
         }
 
-       
-
         private void LaunchApp(MyApp app) // function to launch enabled applications
         {
             // set up a list to track which apps we launched
 
             // different apps have different args, so lets set up a string to hold them
             string args;
-            // TARGET requires a path to a script, if that path has spaces, we need to quote them - set a string called quote we can use to top and tail
+            // TARGET requires a path to a script, if that path has spaces, we need to quote them -
+            // set a string called quote we can use to top and tail
             const string quote = "\"";
             var path = $"{app.Path}/{app.ExeName}";
             // are we launching TARGET?
@@ -431,8 +457,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
             else
             {
-                // yeah, that path didn't exist...
-                // are we launching a web app?
+                // yeah, that path didn't exist... are we launching a web app?
                 if (!string.IsNullOrEmpty(app.WebAppURL))
                 {
                     // ok, let's launch it in the default browser
@@ -446,7 +471,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
             UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
-            // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to define notifyIcon1 first
+            // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to
+            // define notifyIcon1 first
             this.WindowState = WindowState.Minimized;
         }
 
@@ -496,7 +522,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
             if (e.PropertyName == nameof(MyApp.IsEnabled) || e.PropertyName == nameof(MyApp.Order))
             {
-                _=SaveProfilesAsync();
+                _ = SaveProfilesAsync();
             }
         }
 
@@ -507,25 +533,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             SubscribeToAppEvents(newProfile);
         }
 
-        private async Task SaveSettingsAsync(Settings settings)
-        {
-            string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string settingsFilePath = Path.Combine(localFolder, "settings.json");
-
-            string json = JsonConvert.SerializeObject(settings);
-            await File.WriteAllTextAsync(settingsFilePath, json);
-        }
-
-        private void SubscribeToAppEvents(Profile profile)
-        {
-            if (profile != null)
-            {
-                foreach (var app in profile.Apps)
-                {
-                    app.PropertyChanged += MyApp_PropertyChanged;
-                }
-            }
-        }
         private void ProcessExitHandler(object sender, EventArgs e)  //triggered when EDLaunch exits
         {
             bool closeAllApps = false;
@@ -562,7 +569,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 {
                     // if something went wrong, don't raise an exception
                 }
-                // Elite Dangerous Odyssey Materials Helper is a little strange, let's deal with its multiple running processes..
+                // Elite Dangerous Odyssey Materials Helper is a little strange, let's deal with its
+                // multiple running processes..
                 try
                 {
                     Process[] procs = Process.GetProcessesByName("Elite Dangerous Odyssey Materials Helper");
@@ -578,6 +586,26 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     Thread.Sleep(1000);
                 }
                 Environment.Exit(0);
+            }
+        }
+
+        private async Task SaveSettingsAsync(Settings settings)
+        {
+            string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string settingsFilePath = Path.Combine(localFolder, "settings.json");
+
+            string json = JsonConvert.SerializeObject(settings);
+            await File.WriteAllTextAsync(settingsFilePath, json);
+        }
+
+        private void SubscribeToAppEvents(Profile profile)
+        {
+            if (profile != null)
+            {
+                foreach (var app in profile.Apps)
+                {
+                    app.PropertyChanged += MyApp_PropertyChanged;
+                }
             }
         }
 
@@ -638,15 +666,6 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         }
 
         #endregion Private Methods
-        private DataGridRow GetDataGridRow(MenuItem menuItem)
-        {
-            DependencyObject obj = menuItem;
-            while (obj != null && obj.GetType() != typeof(DataGridRow))
-            {
-                obj = VisualTreeHelper.GetParent(obj);
-            }
-            return obj as DataGridRow;
-        }
 
         private void AddonDataGrid_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
@@ -668,6 +687,85 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
+        private void Bt_CopyProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var currentProfile = AppState.Instance.CurrentProfile;
+
+            if (currentProfile != null)
+            {
+                bool isUnique = false;
+                string newName = currentProfile.Name;
+
+                while (!isUnique)
+                {
+                    var dialog = new RenameProfileDialog(newName);
+                    dialog.Title = "Copy Profile";
+                    // Center the dialog within the owner window
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    dialog.Owner = this;  // Or replace 'this' with reference to the main window
+
+                    if (dialog.ShowDialog() == true)
+                    {
+                        newName = dialog.NewName;
+
+                        // Check if the profile name is unique
+                        if (!AppState.Instance.Profiles.Any(p => p.Name == newName))
+                        {
+                            // Change profile name
+                            var newProfile = new Profile
+                            {
+                                Name = newName,
+                                Apps = new ObservableCollection<MyApp>(currentProfile.Apps)
+                            };
+                            AppState.Instance.Profiles.Add(newProfile);
+                            _ = SaveProfilesAsync();
+
+                            isUnique = true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Profile name must be unique. Please enter a different name.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void Bt_RenameProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var currentProfile = AppState.Instance.CurrentProfile;
+
+            if (currentProfile != null)
+            {
+                // Show rename dialog and get result
+                var dialog = new RenameProfileDialog(currentProfile.Name);
+                // Center the dialog within the owner window
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                dialog.Owner = this;  // Or replace 'this' with reference to the main window
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Change profile name
+                    currentProfile.Name = dialog.NewName;
+                    // need to save the settings
+                    _ = SaveProfilesAsync();
+                }
+            }
+        }
+
+        private DataGridRow GetDataGridRow(MenuItem menuItem)
+        {
+            DependencyObject obj = menuItem;
+            while (obj != null && obj.GetType() != typeof(DataGridRow))
+            {
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+            return obj as DataGridRow;
+        }
 
         private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -676,8 +774,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             var app = AppState.Instance.CurrentApp;
             Debug.WriteLine($"Clicked on profile: {profile.Name}");
 
-            // Now you can use profile and app.
-            // Make sure to create a copy of app, not to use the same instance in multiple profiles.
+            // Now you can use profile and app. Make sure to create a copy of app, not to use the
+            // same instance in multiple profiles.
             if (app != null)
             {
                 Debug.WriteLine($"Clicked on app: {app.Name}");
@@ -696,14 +794,11 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 // Add the app to the profile
                 profile.Apps.Add(appCopy);
                 _ = SaveProfilesAsync();
-            }else
+            }
+            else
             {
-               Debug.WriteLine("No app selected");
+                Debug.WriteLine("No app selected");
             }
         }
-
-
     }
-
-
 }
