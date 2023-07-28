@@ -51,10 +51,10 @@
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
                         Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
-                <Button x:Name="Bt_AddApp" Content="Add App" Width="106" Margin="10,0"
+                <Button x:Name="Bt_AddApp" Content="Add App" Width="131" Margin="10,0"
                         Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
-                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
+                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="131" />
 
                 <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <ComboBox x:Name="Cb_Profiles" 
@@ -79,7 +79,8 @@ Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButto
                         Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
                 <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit"
                           DataContext="{x:Static local:AppState.Instance}"
-                          IsChecked="{Binding CloseAllApps, Mode=TwoWay}"
+                          IsChecked="{Binding CloseAllApps, Mode=TwoWay}" Checked="CloseAllAppsCheckbox_Checked_1" Unchecked ="CloseAllAppsCheckbox_Unchecked_1"
+                           
                           />
             </StackPanel>
         </StackPanel>
