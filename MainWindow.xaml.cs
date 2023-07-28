@@ -58,9 +58,15 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         #region Public Constructors
 
-        public MainWindow()
+        public MainWindow(string profileName = null)
         {
             InitializeComponent();
+            
+            if (!string.IsNullOrEmpty(profileName))
+            {
+                // Use the profileName to load the appropriate profile
+                //LoadProfile(profileName);
+            }
             // Copy user settings from previous application version if necessary
             if (Properties.Settings.Default.UpdateSettings)
             {
@@ -90,6 +96,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
             Properties.Settings.Default.Save();
         }
+      
 
         protected override void OnContentRendered(EventArgs e)
         {
@@ -138,7 +145,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        public async Task LoadProfilesAsync()
+        public async Task LoadProfilesAsync(string profileName = null)
         {
             try
             {
@@ -159,10 +166,19 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     // Set the loaded profiles to AppState.Instance.Profiles
                     AppState.Instance.Profiles = profiles;
 
-                    // Set the CurrentProfile to the default profile (or first one if no default exists)
-                    AppState.Instance.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault)
-                        ?? AppState.Instance.Profiles.FirstOrDefault();
-                    Cb_Profiles.SelectedItem = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
+                    if (profileName != null)
+                    {
+                        // If profileName argument is provided, select that profile
+                        AppState.Instance.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == profileName);
+                        Cb_Profiles.SelectedItem = AppState.Instance.Profiles.FirstOrDefault(p => p.Name == profileName);
+                    }
+                    else
+                    {
+                        // Set the CurrentProfile to the default profile (or first one if no default exists)
+                        AppState.Instance.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault)
+                            ?? AppState.Instance.Profiles.FirstOrDefault();
+                        Cb_Profiles.SelectedItem = AppState.Instance.Profiles.FirstOrDefault(p => p.IsDefault);
+                    }
                     SubscribeToAppEvents(AppState.Instance.CurrentProfile);
                 }
                 else
@@ -176,6 +192,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 // Handle other exceptions
             }
         }
+
 
         public async Task SaveProfilesAsync()
         {
@@ -495,12 +512,24 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadProfilesAsync();
+            await LoadProfilesAsync(App.ProfileName);
             settings = await LoadSettingsAsync();
             isDarkTheme = settings.Theme == "Dark";
             ApplyTheme(settings.Theme);
             AppState.Instance.CloseAllAppsOnExit = settings.CloseAllAppsOnExit;
+            if (App.AutoLaunch)
+            {
+                foreach (var app in AppState.Instance.CurrentProfile.Apps)
+                {
+                    if (app.IsEnabled)
+                    {
+                        LaunchApp(app);
+                    }
+                }
+            }
         }
+
+
 
         private void ModifyTheme(Uri newThemeUri)
         {
