@@ -79,10 +79,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             ApplicationVersion = $"{version.Major}.{version.Minor}.{version.Build}"; // format as desired
             // Set the data context to AppState instance
             this.DataContext = AppState.Instance;
-            if (Properties.Settings.Default.CloseAllAppsOnExit)
-            {
-                CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
-            }
+            CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -800,5 +797,18 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 Debug.WriteLine("No app selected");
             }
         }
+
+        private void CloseAllAppsCheckbox_Checked_1(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.CloseAllAppsOnExit = true;
+            Properties.Settings.Default.Save();
+        }
+
+        private void CloseAllAppsCheckbox_Unchecked_1(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.CloseAllAppsOnExit = false;
+            Properties.Settings.Default.Save();
+        }
+
     }
 }
