@@ -45,11 +45,6 @@ to automatically load a profile and launch the apps. *Please note, if you get th
 
 <img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/89ced4d2-1070-4a69-b4bf-aaed3f05cca9" alt="image" width="300">
 
-NOTE For some reason, Windows Defender was flagging this as a Trojan, probably because the code executes other programs - it has been submitted to Microsoft for analysis and shown to be clean:
-
-https://www.microsoft.com/en-us/wdsi/submission/67cb841b-2cdd-445e-8f35-32f5d27667e1
-
-And I have scanned it with Virus Total:
 
  Virus total report:
  https://www.virustotal.com/gui/file/24522769155d8443cd7f9d2ca7469bd6b6548ffe00515d7c3b792adda36ef6ce?nocache=1
