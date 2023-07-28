@@ -17,6 +17,7 @@ Now you can add some apps by hitting the Add App button: (NOTE as a minimum, you
 
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/1e71eb44-a582-41fa-850f-45524d45fdeb)
 
+TIP use /autorun /autoexit on edlaunch as arguments to automatically launch elite once the launcher has loaded, and exit the launcher when exiting the game
 
 Remeber to tick the enabled button if you want it enabled. Dont worry if you forget, you can change it later!
 If you use T.A.R.G.E.T or any other software that requires arguments (e.g. /vr for running elite in VR) just add them in:
