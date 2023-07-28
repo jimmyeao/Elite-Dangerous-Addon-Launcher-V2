@@ -1,4 +1,5 @@
 # Elite Dangerous Addon Launcher V2
+[![CodeQL](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml/badge.svg)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml)
 
 The purpose of this program is to allow you to choose which apps and websites to launch when you run Elite, and optionally close the apps when you close the Elite launcher.
 
