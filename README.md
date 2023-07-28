@@ -1,7 +1,9 @@
 # Elite Dangerous Addon Launcher V2
 
 The purpose of this program is to allow you to choose which apps and websites to launch when you run Elite, and optionally close the apps when you close the Elite launcher.
-![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/3bed5ee7-22f4-4139-85bd-298adf701589)
+
+![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/8ca87b01-de0e-4942-875f-faf06372517f)
+
 
 
 The first thing you will want to do is create a profile, i have 2 named VR and Non VR.
