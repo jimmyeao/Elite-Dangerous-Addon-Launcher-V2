@@ -13,7 +13,7 @@ Click Add Profile and give it a name:
 
 
 if you want this to be your default profile, tick the default box!
-Now you can add some apps by hitting the Add App button:
+Now you can add some apps by hitting the Add App button: (NOTE as a minimum, you need to add edlaunch.exe!)
 
 ![image](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/1e71eb44-a582-41fa-850f-45524d45fdeb)
 
