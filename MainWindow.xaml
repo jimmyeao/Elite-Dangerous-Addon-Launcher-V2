@@ -147,6 +147,9 @@ Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButto
                    Margin="10,0" 
                    Height="128" 
                    VerticalAlignment="Top" />
+            <Button x:Name="Btn_Launch_Copy" Content="Import" Click="ImportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,115,0,201" Grid.Column="1" />
+            <Button x:Name="Btn_Launch_Copy1" Content="Export" Click="ExportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,158,0,158" Grid.Column="1" />
+
         </Grid>
     </Grid>
 </Window>
