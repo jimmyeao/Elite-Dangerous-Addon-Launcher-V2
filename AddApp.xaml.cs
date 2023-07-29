@@ -26,6 +26,21 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             this.Loaded += AddApp_Loaded;
         }
+        private void Tb_AppExeName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (Tb_AppExeName.Text == "edlaunch.exe")
+            {
+                CheckBox1.Visibility = Visibility.Visible;
+                CheckBox2.Visibility = Visibility.Visible;
+                CheckBox3.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                CheckBox1.Visibility = Visibility.Hidden;
+                CheckBox2.Visibility = Visibility.Hidden;
+                CheckBox3.Visibility = Visibility.Hidden;
+            }
+        }
 
         private void AddApp_Loaded(object sender, RoutedEventArgs e)
         {
@@ -55,6 +70,51 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 Tb_AppExeName.Text = fileName;
             }
         }
+        private void CheckBox1_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!Tb_App_Args.Text.Contains("/autorun"))
+            {
+                Tb_App_Args.Text += " /autorun";
+            }
+        }
+
+        private void CheckBox1_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Tb_App_Args.Text = Tb_App_Args.Text.Replace(" /autorun", "");
+        }
+
+        private void CheckBox2_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!Tb_App_Args.Text.Contains("/autoquit"))
+            {
+                Tb_App_Args.Text += " /autoquit";
+            }
+        }
+
+        private void CheckBox2_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Tb_App_Args.Text = Tb_App_Args.Text.Replace(" /autoquit", "");
+        }
+
+        private void Tb_App_Args_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CheckBox1.IsChecked = Tb_App_Args.Text.Contains("/autorun");
+            CheckBox2.IsChecked = Tb_App_Args.Text.Contains("/autoquit");
+            CheckBox3.IsChecked = Tb_App_Args.Text.Contains("/vr");
+        }
+        private void CheckBox3_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Tb_App_Args.Text = Tb_App_Args.Text.Replace(" /vr", "");
+        }
+        private void CheckBox3_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!Tb_App_Args.Text.Contains("/vr"))
+            {
+                Tb_App_Args.Text += " /vr";
+            }
+        }
+
+
 
         private void addApp(object sender, RoutedEventArgs e)
         {

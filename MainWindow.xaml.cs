@@ -352,6 +352,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                                                        // Set the owner and startup location
                 addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
                 addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                addAppWindow.Title = "Edit App";
                 addAppWindow.ShowDialog();
             }
         }
