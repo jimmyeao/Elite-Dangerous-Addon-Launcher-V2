@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Win32;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Newtonsoft.Json.Linq;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
 
@@ -86,6 +88,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             // Set the data context to AppState instance
             this.DataContext = AppState.Instance;
             CloseAllAppsCheckbox.IsChecked = Properties.Settings.Default.CloseAllAppsOnExit;
+            
         }
 
         protected override void OnClosed(EventArgs e)
@@ -142,6 +145,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             {
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
                 dropInfo.Effects = DragDropEffects.Move;
+                SaveProfilesAsync();
             }
         }
 
@@ -300,17 +304,47 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
         }
 
-        private void Bt_RemoveProfile_Click_1(object sender, RoutedEventArgs e)
+        private async void Bt_RemoveProfile_Click_1(object sender, RoutedEventArgs e)
         {
             Profile profileToRemove = (Profile)Cb_Profiles.SelectedItem;
 
             if (profileToRemove != null)
             {
-                AppState.Instance.Profiles.Remove(profileToRemove);
-                _ = SaveProfilesAsync();
-                UpdateDataGrid();
+                CustomDialog dialog = new CustomDialog("Are you sure you want to delete this profile?");
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                dialog.ShowDialog();
+
+                if (dialog.Result == MessageBoxResult.Yes)
+                {
+                    AppState.Instance.Profiles.Remove(profileToRemove);
+
+                    // Check if another profile can be selected
+                    if (AppState.Instance.Profiles.Any())
+                    {
+                        // Select the next profile, or the first one if no next profile exists
+                        AppState.Instance.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault(p => p != profileToRemove) ?? AppState.Instance.Profiles.First();
+
+                        // If no profile is set as default, set the current profile as the default
+                        if (!AppState.Instance.Profiles.Any(p => p.IsDefault))
+                        {
+                            AppState.Instance.CurrentProfile.IsDefault = true;
+                            DefaultCheckBox.IsChecked = true;
+                        }
+                    }
+                    else
+                    {
+                        // No profiles left, so set CurrentProfile to null
+                        AppState.Instance.CurrentProfile = null;
+                    }
+
+                    _ = SaveProfilesAsync();
+                    UpdateDataGrid();
+                }
             }
         }
+
+
 
         private void Btn_Edit_Click(object sender, RoutedEventArgs e)
         {
@@ -352,6 +386,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 {
                     UpdateDataGrid();
                     DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
+                    CheckEdLaunchInProfile();
                 }
             }
         }
@@ -413,13 +448,20 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         {
             // get the button that raised the event
             var button = (Button)sender;
+            CustomDialog dialog = new CustomDialog("Are you sure?");
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            dialog.ShowDialog();
 
-            // retrieve the item associated with this button
-            var appToDelete = (MyApp)button.DataContext;
+            if (dialog.Result == MessageBoxResult.Yes)
+            {
+                // retrieve the item associated with this button
+                var appToDelete = (MyApp)button.DataContext;
 
-            // remove the item from the collection
-            AppState.Instance.CurrentProfile.Apps.Remove(appToDelete);
-            _ = SaveProfilesAsync();
+                // remove the item from the collection
+                AppState.Instance.CurrentProfile.Apps.Remove(appToDelete);
+                _ = SaveProfilesAsync();
+            }
         }
 
         private void LaunchApp(MyApp app) // function to launch enabled applications
@@ -527,6 +569,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     }
                 }
             }
+            CheckEdLaunchInProfile();
         }
 
 
@@ -744,13 +787,17 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                                 Apps = new ObservableCollection<MyApp>(currentProfile.Apps)
                             };
                             AppState.Instance.Profiles.Add(newProfile);
+                            AppState.Instance.CurrentProfile = newProfile; // switch to the new profile
                             _ = SaveProfilesAsync();
-
+                            Cb_Profiles.SelectedItem = newProfile; // update combobox selected item
                             isUnique = true;
                         }
                         else
                         {
-                            MessageBox.Show("Profile name must be unique. Please enter a different name.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ErrorDialog errdialog = new ErrorDialog("Profile name must be unique. Please enter a different name.");
+                            errdialog.Owner = Application.Current.MainWindow;
+                            errdialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                            errdialog.ShowDialog();
                         }
                     }
                     else
@@ -760,6 +807,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 }
             }
         }
+
 
         private void Bt_RenameProfile_Click(object sender, RoutedEventArgs e)
         {
@@ -838,6 +886,224 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             Properties.Settings.Default.CloseAllAppsOnExit = false;
             Properties.Settings.Default.Save();
         }
+        private async void CheckEdLaunchInProfile()
+        {
+            // Get the current profile
+            var currentProfile = AppState.Instance.CurrentProfile;
+            if(currentProfile == null)
+            {
+                return;
+            }
+            // Check if edlaunch.exe exists in the current profile
+            if (!currentProfile.Apps.Any(a => a.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase)))
+            {
+                // edlaunch.exe does not exist in the current profile
+                // Prompt the user with a dialog offering to scan their computer for it
+                CustomDialog dialog = new CustomDialog("Elite Dangerous does not exist in the current profile. Would you like to scan your computer for it?");
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                dialog.ShowDialog();
+
+           
+
+                // If the user clicked Yes, call the method that scans the computer for edlaunch.exe
+                if (dialog.Result == MessageBoxResult.Yes)
+                {
+                    var EdLuanchPaths = await ScanComputerForEdLaunch(); // Note the "await" keyword here
+                    if (EdLuanchPaths.Count > 0)
+                    {
+                        // Add edlaunch.exe to the current profile
+                        var edlaunch = new MyApp
+                        {
+                            Name = "Elite Dangerous",
+                            ExeName = "edlaunch.exe",
+                            Path = Path.GetDirectoryName(EdLuanchPaths[0]),
+                            IsEnabled = true,
+                            Order = 0
+                        };
+                        currentProfile.Apps.Add(edlaunch);
+                        await SaveProfilesAsync(); // You can also "await" here since SaveProfilesAsync is probably asynchronous
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "edlaunch.exe was not found on your computer. Please add it manually.",
+                            "edlaunch.exe Not Found",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
+                    }
+                }
+            }
+        }
+
+        public static async Task<List<string>> ScanComputerForEdLaunch()
+        {
+            List<string> foundPaths = new List<string>();
+            string targetFolder = "Elite Dangerous";
+            string targetFile = "edlaunch.exe";
+            var tokenSource = new CancellationTokenSource();
+            var token = tokenSource.Token;
+
+            SearchProgressWindow progressWindow = new SearchProgressWindow();
+
+            progressWindow.Owner = Application.Current.MainWindow;
+            progressWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            progressWindow.Closing += (s, e) => tokenSource.Cancel();
+
+            progressWindow.Show(); // Show the window before starting the task
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    foreach (DriveInfo drive in DriveInfo.GetDrives())
+                    {
+                        if (token.IsCancellationRequested)
+                            break;
+
+                        if (drive.DriveType == DriveType.Fixed)
+                        {
+                            try
+                            {
+                                string driveRoot = drive.RootDirectory.ToString();
+                                if (TraverseDirectories(driveRoot, targetFolder, targetFile, foundPaths, progressWindow, 7, token))
+                                {
+                                    break;
+                                }
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                // If we don't have access to the directory, skip it
+                            }
+                            catch (IOException)
+                            {
+                                // If another error occurs, skip it
+                            }
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // If operation is canceled, return
+                    return;
+                }
+            }, token);
+
+            if (progressWindow.IsVisible)
+                progressWindow.Close();
+
+            return foundPaths;
+        }
+
+
+        public static bool TraverseDirectories(string root, string targetFolder, string targetFile, List<string> foundPaths, SearchProgressWindow window, int maxDepth, CancellationToken token, int currentDepth = 0)
+        {
+            // Array of directories to exclude
+            string[] excludeDirs = {
+                "windows",
+                "users",
+                "OneDriveTemp",
+                "ProgramData",
+                "$Recycle.Bin",
+                "OneDrive"
+            };
+
+            if (token.IsCancellationRequested)
+                return false;
+
+            // Make sure not to exceed maximum depth
+            if (currentDepth > maxDepth) return false;
+
+            foreach (string dir in Directory.GetDirectories(root))
+            {
+                // Check for excluded directories
+                bool isExcluded = false;
+                foreach (string excludeDir in excludeDirs)
+                {
+                    if (dir.ToLower().Contains(excludeDir.ToLower()))
+                    {
+                        isExcluded = true;
+                        break;
+                    }
+                }
+
+                if (isExcluded || token.IsCancellationRequested)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    string dirName = new DirectoryInfo(dir).Name;
+
+                    if (dirName.Equals(targetFolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // The folder has the name we're looking for, now we just need to check if the file is there
+                        foreach (string file in Directory.GetFiles(dir))
+                        {
+                            if (Path.GetFileName(file).Equals(targetFile, StringComparison.OrdinalIgnoreCase))
+                            {
+                                foundPaths.Add(file);
+                                return true; // File has been found
+                            }
+                        }
+                    }
+
+                    // Trim the path for display in the UI
+                    string trimmedPath = dir;
+                    if (dir.Count(f => f == '\\') > 2)
+                    {
+                        var parts = dir.Split('\\');
+                        trimmedPath = string.Join("\\", parts.Take(3)) + "\\...";
+                    }
+
+                    window.Dispatcher.Invoke(() =>
+                    {
+                        window.searchStatusTextBlock.Text = $"Checking: {trimmedPath}";
+                    });
+
+                    // Move on to the next level
+                    bool found = TraverseDirectories(dir, targetFolder, targetFile, foundPaths, window, maxDepth, token, currentDepth + 1);
+
+                    if (found)
+                    {
+                        return true; // File has been found in a subdirectory, so we stop the search
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // If we don't have access to the directory, skip it
+                }
+                catch (IOException)
+                {
+                    // If another error occurs, skip it
+                }
+            }
+
+            return false; // If we get to this point, we haven't found the file
+        }
+
+
+
+        private static string ShortenPath(string fullPath, int maxParts)
+        {
+            var parts = fullPath.Split(Path.DirectorySeparatorChar);
+            return string.Join(Path.DirectorySeparatorChar, parts.Take(maxParts));
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     }
 }
