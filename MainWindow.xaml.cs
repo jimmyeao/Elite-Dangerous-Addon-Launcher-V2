@@ -25,9 +25,9 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         public List<string> processList = new List<string>();
 
         private string _applicationVersion;
-
+        private bool _isChecking = false;
         private string _appVersion;
-
+        private bool _isLoading = true;
         // The row that will be dragged.
         private DataGridRow _rowToDrag;
 
@@ -142,6 +142,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             {
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
                 dropInfo.Effects = DragDropEffects.Move;
+              
                 SaveProfilesAsync();
             }
         }
@@ -378,10 +379,16 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 {
                     UpdateDataGrid();
                     DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
-                    CheckEdLaunchInProfile();
+                    if (!_isLoading) // Change here
+                    {
+                        _isChecking = true;
+                        CheckEdLaunchInProfile();
+                        _isChecking = false;
+                    }
                 }
             }
         }
+
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)  // this is the checkbox fo r the defaul profile
         {
@@ -546,6 +553,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            _isLoading = true;
             await LoadProfilesAsync(App.ProfileName);
             settings = await LoadSettingsAsync();
             isDarkTheme = settings.Theme == "Dark";
@@ -561,7 +569,13 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                     }
                 }
             }
-            CheckEdLaunchInProfile();
+            _isLoading = false;
+            if (_isChecking == false)
+            {
+                _isChecking = true;
+                CheckEdLaunchInProfile();
+                _isChecking = false;
+            }
         }
 
         private void ModifyTheme(Uri newThemeUri)

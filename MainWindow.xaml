@@ -49,8 +49,6 @@
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="Bt_AddProfile" Content="Add Profile" Width="131" 
-                        Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button x:Name="Bt_AddApp" Content="Add App" Width="131" Margin="10,0"
                         Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
@@ -66,17 +64,22 @@
                 <CheckBox x:Name="DefaultCheckBox" Content="Default"  
                           IsChecked="{Binding IsDefault, Mode=TwoWay}" 
                           Margin="10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
+                <Button x:Name="Btn_Launch" Content="Launch" Width="106"
+                        Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Width="131"
-                        Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
-                <Button x:Name="Bt_CopyProfile" Content="Copy Profile" Width="131"
-Click="Bt_CopyProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}"  Margin="0,0,10,0"/>
-                <Button x:Name="Bt_RenameProfile" Content="Rename Profile" Width="131"
-Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
-                <Button x:Name="Btn_Launch" Content="Launch" Width="106"
-                        Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" />
+                <Expander Header="Profiles.." Width="200">
+                    <StackPanel>
+                        <Button x:Name="Bt_AddProfile" Content="Add Profile" Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_CopyProfile" Content="Copy Profile" Click="Bt_CopyProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_RenameProfile" Content="Rename Profile" Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Btn_Import" Content="Import" Click="ImportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Btn_Export" Content="Export" Click="ExportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                    </StackPanel>
+                </Expander>
+               
                 <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit"
                           DataContext="{x:Static local:AppState.Instance}"
                           IsChecked="{Binding CloseAllApps, Mode=TwoWay}" Checked="CloseAllAppsCheckbox_Checked_1" Unchecked ="CloseAllAppsCheckbox_Unchecked_1"
@@ -147,8 +150,6 @@ Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButto
                    Margin="10,0" 
                    Height="128" 
                    VerticalAlignment="Top" />
-            <Button x:Name="Btn_Launch_Copy" Content="Import" Click="ImportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,115,0,201" Grid.Column="1" />
-            <Button x:Name="Btn_Launch_Copy1" Content="Export" Click="ExportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,158,0,158" Grid.Column="1" />
 
         </Grid>
     </Grid>
