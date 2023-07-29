@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Elite_Dangerous_Addon_Launcer_V2
@@ -356,6 +357,65 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 addAppWindow.ShowDialog();
             }
         }
+        public void ShowWhatsNewIfUpdated()
+        {
+            // Get the current assembly version.
+            var assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+            // Get the last seen version from the application settings.
+            var lastSeenVersion = Properties.Settings.Default.LastSeenVersion;
+
+            // If the last seen version is empty (which it will be the first time this method is run)
+            // or if the assembly version is greater than the last seen version, show the what's new dialog.
+            if (string.IsNullOrEmpty(lastSeenVersion) || new Version(lastSeenVersion) < assemblyVersion)
+            {
+                ShowWhatsNew();
+
+                // Update the last seen version in the application settings.
+                Properties.Settings.Default.LastSeenVersion = assemblyVersion.ToString();
+
+                // Save the application settings.
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        public void ShowWhatsNew()
+        {
+            WhatsNewWindow whatsNewWindow = new WhatsNewWindow();
+
+            // Set the text to what's new
+            Paragraph titleParagraph = new Paragraph();
+            titleParagraph.Inlines.Add(new Bold(new Run("New for this version")));
+            whatsNewWindow.WhatsNewText.Document.Blocks.Add(titleParagraph);
+
+            List list = new List();
+
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Launch Options For Elite")));
+            list.ListItems.Add(listItem1);
+
+            ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
+            list.ListItems.Add(listItem2);
+
+            ListItem listItem3 = new ListItem(new Paragraph(new Run("Added themed dialogs")));
+            list.ListItems.Add(listItem3);
+
+            ListItem listItem4 = new ListItem(new Paragraph(new Run("Fly safe, Cmdr! o7")));
+            list.ListItems.Add(listItem4);
+
+            whatsNewWindow.WhatsNewText.Document.Blocks.Add(list);
+
+            whatsNewWindow.Owner = this; // Set owner to this MainWindow
+            whatsNewWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner; // Center the window over its owner
+
+            whatsNewWindow.ShowDialog();
+        }
+
+
+
+
+
+
+
 
         private void Btn_Launch_Click(object sender, RoutedEventArgs e)
         {
@@ -577,6 +637,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 CheckEdLaunchInProfile();
                 _isChecking = false;
             }
+            ShowWhatsNewIfUpdated();
         }
 
         private void ModifyTheme(Uri newThemeUri)

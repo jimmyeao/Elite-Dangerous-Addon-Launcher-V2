@@ -70,5 +70,17 @@ namespace Elite_Dangerous_Addon_Launcer_V2.Properties {
                 this["UpdateSettings"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSeenVersion {
+            get {
+                return ((string)(this["LastSeenVersion"]));
+            }
+            set {
+                this["LastSeenVersion"] = value;
+            }
+        }
     }
 }
