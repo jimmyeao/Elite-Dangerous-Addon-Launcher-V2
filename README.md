@@ -4,21 +4,27 @@
 The purpose of this program is to allow you to choose which apps and websites to launch when you run Elite, and optionally close the apps when you close the Elite launcher.
 
 
-<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/8ca87b01-de0e-4942-875f-faf06372517f" alt="image" width="400">
+<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/aa86820b-a872-4316-a617-161edd274807" alt="image" width="400">
 
 
 
 The first thing you will want to do is create a profile, i have 2 named VR and Non VR.
+
+Click On Profiles:
+
+<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/8e977046-3151-4b9f-9242-7306e31e7f56" alt="image" width="400">
+
 Click Add Profile and give it a name:
 
-<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/957ddb92-642a-42fa-8d34-7592de807deb" alt="image" width="200">
+<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/57b1ab21-68f8-416d-9070-df8066da2aad" alt="image" width="400">
 
 if you want this to be your default profile, tick the default box!
-Now you can add some apps by hitting the Add App button: (**NOTE as a minimum, you need to add edlaunch.exe!**)
+Now you can add some apps by hitting the Add App button: (**NOTE as a minimum, you need to add edlaunch.exe but the program will offer to locate this for you**)
 
-<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/1e71eb44-a582-41fa-850f-45524d45fdeb" alt="image" width="400">
+<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/55562da7-0263-4fe6-a3f3-f2db95960137" alt="image" width="400">
 
-TIP use /autorun /autoexit on edlaunch as arguments to automatically launch elite once the launcher has loaded, and exit the launcher when exiting the game
+
+TIP use /autorun /autoexit on edlaunch as arguments to automatically launch elite once the launcher has loaded, and exit the launcher when exiting the game or toggle VR mode
 
 Remeber to tick the enabled button if you want it enabled. Dont worry if you forget, you can change it later!
 If you use T.A.R.G.E.T or any other software that requires arguments (e.g. /vr for running elite in VR) just add them in:
@@ -37,7 +43,8 @@ You can also add websites:
 
  You can right click items to add them to another profile:
  
-<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/5b1fb3ac-b746-4917-a2e9-c9ba75db6403" alt="image" width="400">
+<img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/93adc6aa-d41e-45f3-894c-a46644f2b7c5" alt="image" width="400">
+
 
 You can pass command line arguments - create a shortcut and add
 **/profile="profilename" /autolaunch**
