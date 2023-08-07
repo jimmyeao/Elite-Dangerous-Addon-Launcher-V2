@@ -19,6 +19,20 @@ namespace Elite_Dangerous_Addon_Launcer_V2
         #endregion Private Fields
 
         #region Public Events
+        public MyApp DeepCopy()
+        {
+            return new MyApp
+            {
+                Args = this.Args,
+                ExeName = this.ExeName,
+                InstallationURL = this.InstallationURL,
+                IsEnabled = this.IsEnabled,
+                Name = this.Name,
+                Order = this.Order,
+                Path = this.Path,
+                WebAppURL = this.WebAppURL
+            };
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
