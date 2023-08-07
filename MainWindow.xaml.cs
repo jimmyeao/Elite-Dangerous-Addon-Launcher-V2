@@ -390,17 +390,17 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Launch Options For Elite")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with copying profiles")));
             list.ListItems.Add(listItem1);
 
-            ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
-            list.ListItems.Add(listItem2);
+          //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
+          //  list.ListItems.Add(listItem2);
 
-            ListItem listItem3 = new ListItem(new Paragraph(new Run("Added themed dialogs")));
-            list.ListItems.Add(listItem3);
+          //  ListItem listItem3 = new ListItem(new Paragraph(new Run("Added themed dialogs")));
+          //  list.ListItems.Add(listItem3);
 
-            ListItem listItem4 = new ListItem(new Paragraph(new Run("Fly safe, Cmdr! o7")));
-            list.ListItems.Add(listItem4);
+          //  ListItem listItem4 = new ListItem(new Paragraph(new Run("Fly safe, Cmdr! o7")));
+          //  list.ListItems.Add(listItem4);
 
             whatsNewWindow.WhatsNewText.Document.Blocks.Add(list);
 
@@ -1003,7 +1003,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                             var newProfile = new Profile
                             {
                                 Name = newName,
-                                Apps = new ObservableCollection<MyApp>(currentProfile.Apps)
+                                Apps = new ObservableCollection<MyApp>(currentProfile.Apps.Select(app => app.DeepCopy()))
                             };
                             AppState.Instance.Profiles.Add(newProfile);
                             AppState.Instance.CurrentProfile = newProfile; // switch to the new profile
