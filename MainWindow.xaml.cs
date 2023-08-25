@@ -390,7 +390,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with copying profiles")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with launching Elite as a webapp")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
@@ -573,13 +573,27 @@ namespace Elite_Dangerous_Addon_Launcer_V2
             }
             else
             {
-                // yeah, that path didn't exist... are we launching a web app?
                 if (!string.IsNullOrEmpty(app.WebAppURL))
                 {
-                    // ok, let's launch it in the default browser
-                    UpdateStatus("Launching " + app.Name);
                     string target = app.WebAppURL;
-                    Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+                    Process proc = Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+
+                    // If the app we're launching is via the steam URL, we anticipate that EDLaunch will run
+                    if (target.Equals("steam://rungameid/359320", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Small delay to give time for the EDLaunch process to start after Steam starts
+                        Thread.Sleep(2000);
+
+                        // Find the EDLaunch process and attach the event handler
+                        Process edLaunchProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
+                        if (edLaunchProc != null)
+                        {
+                            edLaunchProc.EnableRaisingEvents = true;
+                            edLaunchProc.Exited += new EventHandler(ProcessExitHandler);
+                        }
+                    }
+
+                    UpdateStatus("Launching " + app.Name);
                 }
                 else
                 {
@@ -1058,7 +1072,8 @@ namespace Elite_Dangerous_Addon_Launcer_V2
                 return;
             }
             // Check if edlaunch.exe exists in the current profile
-            if (!currentProfile.Apps.Any(a => a.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase)))
+            if (!currentProfile.Apps.Any(a => a.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase)
+                                || a.WebAppURL?.Equals("steam://rungameid/359320", StringComparison.OrdinalIgnoreCase) == true))
             {
                 // edlaunch.exe does not exist in the current profile Prompt the user with a dialog
                 // offering to scan their computer for it
