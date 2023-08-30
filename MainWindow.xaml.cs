@@ -390,7 +390,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with launching Elite as a webapp")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug DPI scaling on some monitors")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));

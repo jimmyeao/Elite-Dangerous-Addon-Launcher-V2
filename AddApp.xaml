@@ -4,19 +4,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Elite_Dangerous_Addon_Launcer_V2"
     Title="Add App"
-    Width="540" 
-    Height="280"
+    SizeToContent="WidthAndHeight"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        TextElement.FontWeight="Regular"
-        TextElement.FontSize="13"
-        TextOptions.TextFormattingMode="Ideal" 
-        TextOptions.TextRenderingMode="Auto"        
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}">
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.FontWeight="Regular"
+    TextElement.FontSize="13"
+    TextOptions.TextFormattingMode="Ideal" 
+    TextOptions.TextRenderingMode="Auto"        
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{DynamicResource MaterialDesignFont}">
+
     <materialDesign:Card>
         <Grid>
-
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -30,8 +29,8 @@
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="170"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
@@ -40,7 +39,7 @@
 
             <Label Grid.Row="1" Grid.Column="0" Content="Application Path" Margin="10,0,44,0" VerticalAlignment="Center"/>
             <TextBox x:Name="Tb_AppPath" Grid.Column="1" Margin="10,33,10,0" Grid.RowSpan="2" Width="240"/>
-            <Button x:Name="Bt_BrowsePath" Grid.Row="1" Grid.Column="2" Content="Browse.." Click="Bt_BrowsePath_Click" Width="80" Margin="10,0,0,0"/>
+            <Button x:Name="Bt_BrowsePath" Grid.Row="1" Grid.Column="2" Content="Browse.." Click="Bt_BrowsePath_Click" Width="80" Margin="10,0,10,0"/>
 
             <CheckBox x:Name="CheckBox1" Grid.Row="2" Grid.Column="2" Content="Autorun" Margin="10,10,0,0" HorizontalAlignment="Left" Visibility="Hidden" Checked="CheckBox1_Checked" Unchecked="CheckBox1_Unchecked"/>
             <CheckBox x:Name="CheckBox2" Grid.Row="3" Grid.Column="2" Content="Autoexit" Margin="10,10,0,0" HorizontalAlignment="Left" Visibility="Hidden" Checked="CheckBox2_Checked" Unchecked="CheckBox2_Unchecked"/>
