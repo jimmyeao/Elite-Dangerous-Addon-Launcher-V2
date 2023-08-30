@@ -59,8 +59,8 @@
             <CheckBox x:Name="Cb_Enable" Grid.Row="6" Grid.Column="0" Content="Enable?" Margin="10,10,0,0" HorizontalAlignment="Left" Width="103"/>
 
             <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="button1" Content="Save.." Click="addApp"/>
-                <Button x:Name="button2" Content="Cancel" Margin="10,0,0,0" Click="cancelButton"/>
+                <Button x:Name="button1" Content="Save.." Click="addApp" Margin="0,0,0,5"/>
+                <Button x:Name="button2" Content="Cancel" Margin="10,0,0,5" Click="cancelButton"/>
             </StackPanel>
 
             <TextBox x:Name="Tb_AppFileToken" Visibility="Collapsed"/>
