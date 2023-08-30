@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Elite_Dangerous_Addon_Launcer_V2
+namespace Elite_Dangerous_Addon_Launcher_V2
 {
     public partial class App : Application
     {

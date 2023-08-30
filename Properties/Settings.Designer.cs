@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Elite_Dangerous_Addon_Launcer_V2.Properties {
+namespace Elite_Dangerous_Addon_Launcher_V2.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

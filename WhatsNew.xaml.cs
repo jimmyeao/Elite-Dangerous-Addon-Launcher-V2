@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Elite_Dangerous_Addon_Launcer_V2
+namespace Elite_Dangerous_Addon_Launcher_V2
 {
     /// <summary>
     /// Interaction logic for WhatsNew.xaml

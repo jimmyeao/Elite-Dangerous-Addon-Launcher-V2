@@ -1,4 +1,4 @@
-﻿<Window x:Class="Elite_Dangerous_Addon_Launcer_V2.AddProfileDialog"
+﻿<Window x:Class="Elite_Dangerous_Addon_Launcher_V2.AddProfileDialog"
      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
