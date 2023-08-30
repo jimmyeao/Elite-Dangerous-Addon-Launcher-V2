@@ -16,7 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace Elite_Dangerous_Addon_Launcer_V2
+namespace Elite_Dangerous_Addon_Launcher_V2
 
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
@@ -390,7 +390,7 @@ namespace Elite_Dangerous_Addon_Launcer_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug DPI scaling on some monitors")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug blurry text on some forms")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));

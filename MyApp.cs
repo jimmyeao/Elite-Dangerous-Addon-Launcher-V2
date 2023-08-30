@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Elite_Dangerous_Addon_Launcer_V2
+namespace Elite_Dangerous_Addon_Launcher_V2
 {
     public class MyApp : INotifyPropertyChanged
     {

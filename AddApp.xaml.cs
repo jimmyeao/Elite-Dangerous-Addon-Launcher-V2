@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 
-namespace Elite_Dangerous_Addon_Launcer_V2
+namespace Elite_Dangerous_Addon_Launcher_V2
 {
     /// <summary>
     /// Interaction logic for AddApp.xaml
