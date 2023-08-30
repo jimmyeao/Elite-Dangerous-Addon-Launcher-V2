@@ -11,10 +11,11 @@
     TextElement.FontSize="13"
     TextOptions.TextFormattingMode="Ideal" 
     TextOptions.TextRenderingMode="Auto"        
+    UseLayoutRounding="True"
     Background="{DynamicResource MaterialDesignPaper}"
     FontFamily="{DynamicResource MaterialDesignFont}">
 
-    <materialDesign:Card>
+    
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -53,7 +54,7 @@
             <Label Grid.Row="4" Grid.Column="0" Content="Executable Name" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
             <TextBox x:Name="Tb_AppExeName" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Center" Width="260" TextChanged="Tb_AppExeName_TextChanged" VerticalAlignment="Center"/>
 
-            <Label Grid.Row="5" Grid.Column="0" Content="WebApp URL" Margin="32,0,4,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Row="5" Grid.Column="0" Content="WebApp URL" Margin="0,0,4,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
             <TextBox x:Name="Tb_WebApURL" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Center" Width="260" VerticalAlignment="Center"/>
 
             <CheckBox x:Name="Cb_Enable" Grid.Row="6" Grid.Column="0" Content="Enable?" Margin="10,10,0,0" HorizontalAlignment="Left" Width="103"/>
@@ -65,5 +66,5 @@
 
             <TextBox x:Name="Tb_AppFileToken" Visibility="Collapsed"/>
         </Grid>
-    </materialDesign:Card>
+    
 </Window>

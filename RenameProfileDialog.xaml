@@ -21,7 +21,7 @@
     </Window.Resources>
 
     <materialDesign:DialogHost>
-        <materialDesign:Card>
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -32,6 +32,6 @@
 
                 <Button x:Name="BtnOk" Grid.Row="1" Margin="10" Content="OK" Click="OKButton_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
             </Grid>
-        </materialDesign:Card>
+
     </materialDesign:DialogHost>
 </Window>

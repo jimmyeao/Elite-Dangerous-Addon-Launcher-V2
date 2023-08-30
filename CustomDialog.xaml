@@ -14,7 +14,7 @@
     Background="{DynamicResource MaterialDesignPaper}"
     FontFamily="{DynamicResource MaterialDesignFont}">
 
-    <materialDesign:Card>
+
         <Border Padding="20">
             <Grid>
 
@@ -32,5 +32,5 @@
 
             </Grid>
         </Border>
-    </materialDesign:Card>
+
 </Window>
