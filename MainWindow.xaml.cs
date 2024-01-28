@@ -424,6 +424,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             {
                 if (app.IsEnabled)
                 {
+                    Btn_Launch.IsEnabled = false;
                     LaunchApp(app);
                 }
             }
@@ -684,6 +685,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private void ProcessExitHandler(object sender, EventArgs e)  //triggered when EDLaunch exits
         {
+            Btn_Launch.IsEnabled = true;
             bool closeAllApps = false;
             Application.Current.Dispatcher.Invoke(() =>
             {
