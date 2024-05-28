@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -63,7 +64,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         public MainWindow(string profileName = null)
         {
             InitializeComponent();
-
+            LoggingConfig.Configure();
             if (!string.IsNullOrEmpty(profileName))
             {
                 // Use the profileName to load the appropriate profile
@@ -420,12 +421,14 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         private void Btn_Launch_Click(object sender, RoutedEventArgs e)
         {
             // Code to launch all enabled apps
+            Log.Information("Launching all enabled apps..");
             foreach (var app in AppState.Instance.CurrentProfile.Apps)
             {
                 if (app.IsEnabled)
                 {
                     Btn_Launch.IsEnabled = false;
                     LaunchApp(app);
+                    Log.Information("Launching {AppName}..", app.Name);
                 }
             }
         }
@@ -623,7 +626,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 // If the settings file doesn't exist, use defaults
                 settings = new Settings { Theme = "Default" };
             }
-
+            Log.Information("Settings loaded: {Settings}", settings);
             return settings;
         }
 
@@ -685,60 +688,64 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private void ProcessExitHandler(object sender, EventArgs e)  //triggered when EDLaunch exits
         {
-            Btn_Launch.IsEnabled = true;
-            bool closeAllApps = false;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                closeAllApps = CloseAllAppsCheckbox.IsChecked == true;
-            });
-            // if EDLaunch has quit, does the user want us to kill all the apps?
-            if (closeAllApps)
-            {
-                try
+                Btn_Launch.IsEnabled = true;
+                bool closeAllApps = CloseAllAppsCheckbox.IsChecked == true;
+
+                // if EDLaunch has quit, does the user want us to kill all the apps?
+                if (closeAllApps)
                 {
-                    foreach (string p in processList)
+                    Log.Information("CloseAllAppsOnExit is enabled, closing all apps..");
+                    try
                     {
-                        foreach (Process process in Process.GetProcessesByName(p))
+                        foreach (string p in processList)
                         {
-                            // Temp is a document which you need to kill.
-                            if (process.ProcessName.Contains(p))
-                                process.CloseMainWindow();
+                            Log.Information("Closing {0}", p);
+                            foreach (Process process in Process.GetProcessesByName(p))
+                            {
+                                // Temp is a document which you need to kill.
+                                if (process.ProcessName.Contains(p))
+                                    process.CloseMainWindow();
+                            }
                         }
                     }
+                    catch
+                    {
+                        // if something went wrong, don't raise an exception
+                        Log.Error("An error occurred trying to close all apps..");
+                    }
+                    // doesn't seem to want to kill VoiceAttack nicely..
+                    try
+                    {
+                        Process[] procs = Process.GetProcessesByName("VoiceAttack");
+                        foreach (var proc in procs) { proc.Kill(); }        //sadly this means next time it starts, it will complain it was shutdown in an unclean fashion
+                    }
+                    catch
+                    {
+                        // if something went wrong, don't raise an exception
+                    }
+                    // Elite Dangerous Odyssey Materials Helper is a little strange, let's deal with its
+                    // multiple running processes..
+                    try
+                    {
+                        Process[] procs = Process.GetProcessesByName("Elite Dangerous Odyssey Materials Helper");
+                        foreach (var proc in procs) { proc.CloseMainWindow(); }
+                    }
+                    catch
+                    {
+                        // if something went wrong, don't raise an exception
+                    }
+                    // sleep for 5 seconds then quit
+                    for (int i = 5; i != 0; i--)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                    Environment.Exit(0);
                 }
-                catch
-                {
-                    // if something went wrong, don't raise an exception
-                }
-                // doesn't seem to want to kill VoiceAttack nicely..
-                try
-                {
-                    Process[] procs = Process.GetProcessesByName("VoiceAttack");
-                    foreach (var proc in procs) { proc.Kill(); }        //sadly this means next time it starts, it will complain it was shutdown in an unclean fashion
-                }
-                catch
-                {
-                    // if something went wrong, don't raise an exception
-                }
-                // Elite Dangerous Odyssey Materials Helper is a little strange, let's deal with its
-                // multiple running processes..
-                try
-                {
-                    Process[] procs = Process.GetProcessesByName("Elite Dangerous Odyssey Materials Helper");
-                    foreach (var proc in procs) { proc.CloseMainWindow(); }
-                }
-                catch
-                {
-                    // if something went wrong, don't raise an exception
-                }
-                // sleep for 5 seconds then quit
-                for (int i = 5; i != 0; i--)
-                {
-                    Thread.Sleep(1000);
-                }
-                Environment.Exit(0);
-            }
+            });
         }
+
 
         private async Task SaveSettingsAsync(Settings settings)
         {
