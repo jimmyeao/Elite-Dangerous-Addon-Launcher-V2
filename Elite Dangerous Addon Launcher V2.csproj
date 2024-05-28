@@ -6,8 +6,8 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcher_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.1.5.377</AssemblyVersion>
-    <FileVersion>1.1.5.377</FileVersion>
+    <AssemblyVersion>1.1.5.382</AssemblyVersion>
+    <FileVersion>1.1.5.382</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
     <PackageIcon>app.png</PackageIcon>
     <PackageProjectUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</PackageProjectUrl>
@@ -39,6 +39,9 @@
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
