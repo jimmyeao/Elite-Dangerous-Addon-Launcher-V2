@@ -32,7 +32,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         private bool _isLoading = true;
         // The row that will be dragged.
         private DataGridRow _rowToDrag;
-
+        private string logpath;
         // Store the position where the mouse button is clicked.
         private Point _startPoint;
 
@@ -1226,6 +1226,40 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
         }
 
+        private void Btn_ShowLogs(object sender, RoutedEventArgs e)
+        {
+            logpath = LoggingConfig.logFileFullPath;
+            // Ensure the directory exists
+            try
+            {
+                // Get the most recent log file
 
+                if (logpath != null && File.Exists(logpath))
+                {
+                    try
+                    {
+                        ProcessStartInfo processStartInfo = new ProcessStartInfo
+                        {
+                            FileName = logpath,
+                            UseShellExecute = true
+                        };
+
+                        Process.Start(processStartInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Error opening log file: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Log.Error("Log file does not exist.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error opening log file: {ex.Message}");
+            }
+        }
     }
 }
