@@ -391,7 +391,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug blurry text on some forms")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with adding profiles causing a crash on first run")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
@@ -523,7 +523,17 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 var appToDelete = (MyApp)button.DataContext;
 
                 // remove the item from the collection
-                AppState.Instance.CurrentProfile.Apps.Remove(appToDelete);
+                try
+                {
+                    AppState.Instance.CurrentProfile.Apps.Remove(appToDelete);
+                    Log.Information($"App {appToDelete.Name} deleted..", appToDelete.Name);
+                }
+
+                catch (Exception ex)
+                {
+                    // handle exception
+                    Log.Error(ex, "An error occurred trying to delete an app..");
+                }
                 _ = SaveProfilesAsync();
             }
         }
