@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.22621.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
     <RootNamespace>Elite_Dangerous_Addon_Launcher_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <AssemblyVersion>1.1.5.396</AssemblyVersion>
-    <FileVersion>1.1.5.396</FileVersion>
+    <AssemblyVersion>1.1.5.397</AssemblyVersion>
+    <FileVersion>1.1.5.397</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
     <PackageIcon>app.png</PackageIcon>
     <PackageProjectUrl>https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2</PackageProjectUrl>
