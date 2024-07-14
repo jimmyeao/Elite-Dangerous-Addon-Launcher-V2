@@ -648,6 +648,34 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             isDarkTheme = settings.Theme == "Dark";
             ApplyTheme(settings.Theme);
             AppState.Instance.CloseAllAppsOnExit = settings.CloseAllAppsOnExit;
+
+            // Check if there are no profiles and invoke AddProfileDialog if none exist
+            if (AppState.Instance.Profiles == null || AppState.Instance.Profiles.Count == 0)
+            {
+                var window = new AddProfileDialog();
+                // Center the dialog within the owner window
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                window.Owner = this;  // Or replace 'this' with reference to the main window
+
+                if (window.ShowDialog() == true)
+                {
+                    string profileName = window.ProfileName;
+                    var newProfile = new Profile { Name = profileName, IsDefault = true };
+
+                    // Unmark any existing default profiles
+                    foreach (var profile in AppState.Instance.Profiles)
+                    {
+                        profile.IsDefault = false;
+                    }
+
+                    AppState.Instance.Profiles.Add(newProfile);
+                    AppState.Instance.CurrentProfile = newProfile;
+
+                    await SaveProfilesAsync();
+                    UpdateDataGrid();
+                }
+            }
+
             if (App.AutoLaunch)
             {
                 foreach (var app in AppState.Instance.CurrentProfile.Apps)
@@ -667,6 +695,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
             ShowWhatsNewIfUpdated();
         }
+
+
 
         private void ModifyTheme(Uri newThemeUri)
         {
