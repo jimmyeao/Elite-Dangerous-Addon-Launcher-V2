@@ -1,4 +1,5 @@
 # Elite Dangerous Addon Launcher V2
+
 [![CodeQL](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml/badge.svg)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml)
 [![GitHub tag](https://img.shields.io/github/tag/jimmyeao/Elite-Dangerous-Addon-Launcher-V2?include_prereleases=&sort=semver&color=blue)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/releases/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
