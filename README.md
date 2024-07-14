@@ -1,6 +1,8 @@
 # Elite Dangerous Addon Launcher V2
 [![CodeQL](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml/badge.svg)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/actions/workflows/codeql.yml)
-
+[![GitHub tag](https://img.shields.io/github/tag/jimmyeao/Elite-Dangerous-Addon-Launcher-V2?include_prereleases=&sort=semver&color=blue)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/releases/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](#license)
+[![issues - Teams2HA](https://img.shields.io/github/issues/jimmyeao/Elite-Dangerous-Addon-Launcher-V2)](https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/issues)
 The purpose of this program is to allow you to choose which apps and websites to launch when you run Elite, and optionally close the apps when you close the Elite launcher.
 
 
