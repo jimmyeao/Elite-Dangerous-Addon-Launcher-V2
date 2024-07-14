@@ -9,11 +9,14 @@
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.FontWeight="Regular"
-        TextElement.FontSize="14"
+        TextElement.FontSize="12"
+        FontFamily="{materialDesign:MaterialDesignFont}"
+      
+  
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"        
         
-        FontFamily="{DynamicResource MaterialDesignFont}">
+      >
 
         <Grid>
             <Grid.RowDefinitions>
