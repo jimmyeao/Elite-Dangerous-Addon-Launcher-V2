@@ -3,22 +3,15 @@
      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
      Title="Rename Profile" Height="150" Width="300"
-    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-    TextElement.FontWeight="Regular"
-    TextElement.FontSize="13"
-    TextOptions.TextFormattingMode="Ideal"
-    TextOptions.TextRenderingMode="Auto"
-    Background="{DynamicResource MaterialDesignPaper}"
-    FontFamily="{DynamicResource MaterialDesignFont}">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme BaseTheme="Light" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepOrange.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+Background="{DynamicResource MaterialDesign.Brush.Background}"
+TextElement.FontWeight="Regular"
+TextElement.FontSize="12"
+FontFamily="{materialDesign:MaterialDesignFont}"
+
+TextOptions.TextFormattingMode="Ideal" 
+TextOptions.TextRenderingMode="Auto"   >
+   
 
     <materialDesign:DialogHost>
 
