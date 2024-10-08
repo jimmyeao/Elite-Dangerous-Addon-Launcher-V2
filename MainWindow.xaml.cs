@@ -391,7 +391,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with adding profiles causing a crash on first run")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with renaming profiles causing a crash")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
