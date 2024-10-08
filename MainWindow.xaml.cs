@@ -397,11 +397,6 @@ namespace Elite_Dangerous_Addon_Launcher_V2
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
           //  list.ListItems.Add(listItem2);
 
-          //  ListItem listItem3 = new ListItem(new Paragraph(new Run("Added themed dialogs")));
-          //  list.ListItems.Add(listItem3);
-
-          //  ListItem listItem4 = new ListItem(new Paragraph(new Run("Fly safe, Cmdr! o7")));
-          //  list.ListItems.Add(listItem4);
 
             whatsNewWindow.WhatsNewText.Document.Blocks.Add(list);
 
