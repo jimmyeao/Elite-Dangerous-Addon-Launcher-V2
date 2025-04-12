@@ -631,9 +631,15 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                         var psi = new ProcessStartInfo
                         {
                             FileName = shortcutPath,
-                            UseShellExecute = true // Required to launch shortcuts
+                            UseShellExecute = true
                         };
+
                         Process.Start(psi);
+
+                        // Attempt to track the actual ClickOnce process by expected name
+                        string expectedExeName = Path.GetFileNameWithoutExtension(app.ExeName) + ".exe";
+                        processList.Add(expectedExeName); // Add to list for shutdown tracking
+
                         UpdateStatus($"Launching {app.Name} via .appref-ms shortcut...");
                     }
                     catch (Exception ex)
@@ -646,7 +652,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     UpdateStatus($"Shortcut not found: {shortcutPath}");
                 }
 
-                return; // We're done
+                this.WindowState = WindowState.Minimized;
+                return;
             }
 
 
@@ -938,12 +945,23 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                         foreach (string p in processList)
                         {
                             Log.Information("Closing {0}", p);
-                            foreach (Process process in Process.GetProcessesByName(p))
+                            foreach (string process in processList)
                             {
-                                // Temp is a document which you need to kill.
-                                if (process.ProcessName.Contains(p))
-                                    process.CloseMainWindow();
+                                Log.Information("Closing {0}", p);
+                                foreach (Process proc in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(p)))
+                                {
+                                    try
+                                    {
+                                        proc.CloseMainWindow();
+                                        proc.WaitForExit(5000); // give it time to exit
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Warning("Failed to close process {0}: {1}", p, ex.Message);
+                                    }
+                                }
                             }
+
                         }
                     }
                     catch
