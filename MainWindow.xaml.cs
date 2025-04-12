@@ -16,6 +16,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Elite_Dangerous_Addon_Launcher_V2.Services;
+using Newtonsoft.Json.Linq;
 
 namespace Elite_Dangerous_Addon_Launcher_V2
 
@@ -399,16 +401,35 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             if (appToEdit != null)
             {
-                AddApp addAppWindow = new AddApp();
-                addAppWindow.AppToEdit = appToEdit; // Set the AppToEdit to the app you want to edit
-                addAppWindow.MainPageReference = this; // Assuming this is done from MainWindow, else replace 'this' with the instance of MainWindow
-                                                       // Set the owner and startup location
-                addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
+                string exePath = Path.Combine(appToEdit.Path, appToEdit.ExeName);
+
+                if (appToEdit.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase)
+                    && IsEpicInstalled(exePath))
+                {
+                    // Open Legendary settings window instead of AddApp
+                    var legendarySettings = new Views.LegendarySettingsWindow
+                    {
+                        Owner = this,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    legendarySettings.ShowDialog();
+                    return;
+                }
+
+                // Fallback: regular AddApp editing
+                AddApp addAppWindow = new AddApp
+                {
+                    AppToEdit = appToEdit,
+                    MainPageReference = this
+                };
+
+                addAppWindow.Owner = this;
                 addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 addAppWindow.Title = "Edit App";
                 addAppWindow.ShowDialog();
             }
         }
+
         public void ShowWhatsNewIfUpdated()
         {
             // Get the current assembly version.
@@ -584,51 +605,105 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
         }
 
-        private void LaunchApp(MyApp app) // function to launch enabled applications
+        private void LaunchApp(MyApp app)
         {
-            // set up a list to track which apps we launched
-
-            // different apps have different args, so lets set up a string to hold them
             string args;
-            // TARGET requires a path to a script, if that path has spaces, we need to quote them -
-            // set a string called quote we can use to top and tail
             const string quote = "\"";
             var path = $"{app.Path}/{app.ExeName}";
-            // are we launching TARGET?
+
             if (string.Equals(app.ExeName, "targetgui.exe", StringComparison.OrdinalIgnoreCase))
             {
-                // -r is to specify a script
                 args = "-r " + quote + app.Args + quote;
             }
             else
             {
-                // ok its not target, leave the arguments as is
                 args = app.Args;
             }
 
-            if (File.Exists(path))      // worth checking the app we want to launch actually exists...
+            if (File.Exists(path))
             {
                 try
                 {
-                    var info = new ProcessStartInfo(path);
-                    info.Arguments = args;
-                    info.UseShellExecute = true;
-                    info.WorkingDirectory = app.Path;
+                    if (string.Equals(app.ExeName, "edlaunch.exe", StringComparison.OrdinalIgnoreCase) &&
+                        IsEpicInstalled(path))
+                    {
+                        if (!IsLegendaryInstalled())
+                        {
+                            MessageBox.Show("Elite Dangerous is installed via Epic Games, but 'legendary' is not found in PATH.\nPlease install it from https://github.com/derrod/legendary to enable Epic support.", "Legendary Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+
+                        LegendaryConfigManager.EnsureLegendaryConfig();
+
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "legendary",
+                            Arguments = "launch elite",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        };
+
+                        var legendaryProc = Process.Start(psi);
+                        string output = legendaryProc.StandardOutput.ReadToEnd();
+                        string error = legendaryProc.StandardError.ReadToEnd();
+                        Debug.WriteLine("Legendary output:\n" + output);
+                        Debug.WriteLine("Legendary errors:\n" + error);
+
+                        // Start a watcher for EDLaunch process
+                        Task.Run(() =>
+                        {
+                            const int maxRetries = 20;
+                            int retries = 0;
+
+                            while (retries < maxRetries)
+                            {
+                                var edProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
+                                if (edProc != null)
+                                {
+                                    edProc.EnableRaisingEvents = true;
+                                    edProc.Exited += (s, e) =>
+                                    {
+                                        Application.Current.Dispatcher.Invoke(() => ProcessExitHandler(s, e));
+                                    };
+
+                                    break;
+                                }
+
+                                Thread.Sleep(500);
+                                retries++;
+                            }
+                        });
+
+                        UpdateStatus($"Launching {app.Name} (Epic) via Legendary...");
+                        this.WindowState = WindowState.Minimized;
+                        return;
+                    }
+
+                    // Default (non-Epic) launch
+                    var info = new ProcessStartInfo(path)
+                    {
+                        Arguments = args,
+                        UseShellExecute = true,
+                        WorkingDirectory = app.Path
+                    };
+
                     Process proc = Process.Start(info);
                     proc.EnableRaisingEvents = true;
                     processList.Add(proc.ProcessName);
-                    // processList.Add(proc.ProcessName); <-- You'll need to define processList first
-                    if (proc.ProcessName == "EDLaunch")
+
+                    if (proc.ProcessName.Equals("EDLaunch", StringComparison.OrdinalIgnoreCase))
                     {
                         proc.Exited += new EventHandler(ProcessExitHandler);
                     }
+
                     Thread.Sleep(50);
                     proc.Refresh();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // oh dear, something went horribly wrong..
-                    UpdateStatus($"An error occurred trying to launch {app.Name}..");
+                    UpdateStatus($"An error occurred trying to launch {app.Name}: {ex.Message}");
                 }
             }
             else
@@ -638,14 +713,10 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     string target = app.WebAppURL;
                     Process proc = Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
 
-                    // If the app we're launching is via the steam URL, we anticipate that EDLaunch will run
                     if (target.Equals("steam://rungameid/359320", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Small delay to give time for the EDLaunch process to start after Steam starts
                         Thread.Sleep(2000);
-
-                        // Find the EDLaunch process and attach the event handler
-                        Process edLaunchProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
+                        var edLaunchProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
                         if (edLaunchProc != null)
                         {
                             edLaunchProc.EnableRaisingEvents = true;
@@ -662,9 +733,33 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
 
             UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
-            // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to
-            // define notifyIcon1 first
             this.WindowState = WindowState.Minimized;
+        }
+     
+
+        private bool IsLegendaryInstalled()
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "legendary",
+                    Arguments = "--version",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (var process = Process.Start(psi))
+                {
+                    process.WaitForExit(2000);
+                    return process.ExitCode == 0;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task<Settings> LoadSettingsAsync()
@@ -1335,6 +1430,51 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 UpdateDataGrid();
                 Cb_Profiles.SelectedIndex = 0; // if you want to automatically select the first imported profile
             }
+        }
+        private bool IsEpicInstalled(string exePath)
+        {
+            string manifestDir = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests";
+            if (!Directory.Exists(manifestDir))
+                return false;
+
+            string exeFileName = Path.GetFileName(exePath);
+            string exeDirectory = Path.GetDirectoryName(exePath);
+
+            foreach (var file in Directory.GetFiles(manifestDir, "*.item"))
+            {
+                try
+                {
+                    var json = File.ReadAllText(file);
+                    var manifest = JObject.Parse(json);
+                    string launchExe = manifest["LaunchExecutable"]?.ToString();
+                    string installLocation = manifest["InstallLocation"]?.ToString();
+
+
+                    if (!string.IsNullOrEmpty(installLocation) && !string.IsNullOrEmpty(launchExe))
+                    {
+                        // Compare the full exe path
+                        string expectedFullPath = Path.Combine(installLocation, launchExe);
+
+                        if (string.Equals(Path.GetFullPath(expectedFullPath), Path.GetFullPath(exePath), StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                        // Or compare just folder + filename
+                        if (string.Equals(Path.GetFullPath(installLocation), Path.GetFullPath(exeDirectory), StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(launchExe, exeFileName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Skip corrupt manifest
+                }
+            }
+
+            return false;
         }
 
         private void Btn_ShowLogs(object sender, RoutedEventArgs e)

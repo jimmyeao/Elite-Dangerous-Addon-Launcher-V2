@@ -8,6 +8,7 @@
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+ 
     mc:Ignorable="av" 
     x:Class="Elite_Dangerous_Addon_Launcher_V2.MainWindow"
     Title="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
