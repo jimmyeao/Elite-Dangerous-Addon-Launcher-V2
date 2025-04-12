@@ -769,17 +769,12 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             List list = new List();
 
-            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with adding profiles causing a crash on first run")));
+            ListItem listItem1 = new ListItem(new Paragraph(new Run("Fixed bug with renaming profiles causing a crash")));
             list.ListItems.Add(listItem1);
 
           //  ListItem listItem2 = new ListItem(new Paragraph(new Run("Profile Options for import/export and copy/rename/delete")));
           //  list.ListItems.Add(listItem2);
 
-          //  ListItem listItem3 = new ListItem(new Paragraph(new Run("Added themed dialogs")));
-          //  list.ListItems.Add(listItem3);
-
-          //  ListItem listItem4 = new ListItem(new Paragraph(new Run("Fly safe, Cmdr! o7")));
-          //  list.ListItems.Add(listItem4);
 
             whatsNewWindow.WhatsNewText.Document.Blocks.Add(list);
 
