@@ -7,6 +7,12 @@
 
 The purpose of this program is to allow you to choose which apps and websites to launch when you run Elite, and optionally close the apps when you close the Elite launcher.
 
+## New for this release:
+
+Added BETA support for Epic/Legendary - install the game with Epic then use Legendary to launch it. The app should auto detect if this is an Epic games app - I don't have the game on Epic, so feedback would be welcome as to how well this does or doesnt work!
+
+![image](https://github.com/user-attachments/assets/db814481-8049-4e63-b135-5c752f6d9ee5)
+
 
 <img src="https://github.com/jimmyeao/Elite-Dangerous-Addon-Launcher-V2/assets/5197831/aa86820b-a872-4316-a617-161edd274807" alt="image" width="400">
 
@@ -29,6 +35,9 @@ Now you can add some apps by hitting the Add App button: (**NOTE as a minimum, y
 
 
 TIP use /autorun /autoexit on edlaunch as arguments to automatically launch elite once the launcher has loaded, and exit the launcher when exiting the game or toggle VR mode
+
+
+
 
 Remeber to tick the enabled button if you want it enabled. Dont worry if you forget, you can change it later!
 If you use T.A.R.G.E.T or any other software that requires arguments (e.g. /vr for running elite in VR) just add them in:
