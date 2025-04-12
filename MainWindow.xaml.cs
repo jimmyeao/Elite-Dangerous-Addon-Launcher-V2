@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+//using static MaterialDesignThemes.Wpf.Theme;
 
 namespace Elite_Dangerous_Addon_Launcher_V2
 
@@ -95,9 +96,13 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         {
             base.OnClosed(e);
 
-            Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
-            Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
-            Properties.Settings.Default.Save();
+            // Only save manual window size changes, not auto-sized dimensions
+            if (SizeToContent == SizeToContent.Manual)
+            {
+                Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
+                Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
+                Properties.Settings.Default.Save();
+            }
         }
 
         protected override void OnContentRendered(EventArgs e)
@@ -222,8 +227,59 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 // No profile is selected. Clear the data grid.
                 AddonDataGrid.ItemsSource = null;
             }
-        }
 
+            // Force window to resize based on new content
+            AdjustWindowSizeToContent();
+        }
+        private void AdjustWindowSizeToContent()
+        {
+            // Give the UI time to update
+            Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    // Calculate the required height based on the number of items in the grid
+                    double headerHeight = 150;  // Space for controls at top
+                    double footerHeight = 50;   // Increased padding at bottom for less cramped look
+                    double rowHeight = 48;      // Approximate height of each row
+
+                    int itemCount = 0;
+                    if (AppState.Instance.CurrentProfile?.Apps != null)
+                    {
+                        itemCount = AppState.Instance.CurrentProfile.Apps.Count;
+                    }
+
+                    // Calculate the required window height
+                    double requiredHeight = headerHeight + (itemCount * rowHeight) + footerHeight;
+
+                    // Set minimum height
+                    double minHeight = 300;
+                    requiredHeight = Math.Max(requiredHeight, minHeight);
+
+                    // Set maximum height to avoid excessively tall windows
+                    double maxHeight = 800;
+                    requiredHeight = Math.Min(requiredHeight, maxHeight);
+
+                    // Set the window height directly
+                    this.Height = requiredHeight;
+
+                    // Ensure window is within screen bounds
+                    if (this.Top + this.Height > SystemParameters.VirtualScreenHeight)
+                    {
+                        this.Top = Math.Max(0, SystemParameters.VirtualScreenHeight - this.Height);
+                    }
+
+                    // Force layout update
+                    this.UpdateLayout();
+
+                    Log.Information($"Window resized to height: {this.Height} for {itemCount} items");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error adjusting window size");
+                }
+            }, System.Windows.Threading.DispatcherPriority.Render);
+        }
         protected virtual void OnPropertyChanged(string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -232,7 +288,182 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         #endregion Public Methods
 
         #region Private Methods
+        private void Btn_LaunchSingle_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            MyApp appToLaunch = button.CommandParameter as MyApp;
 
+            if (appToLaunch != null)
+            {
+                // Launch just this one app
+                LaunchApp(appToLaunch, sender as Button);
+                Log.Information("Launching single app: {AppName}", appToLaunch.Name);
+            }
+        }
+        private void AddEliteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // If Elite is already in this profile, we should open the edit dialog instead
+            bool eliteAlreadyExists = false;
+            MyApp existingElite = null;
+
+            foreach (var app in AppState.Instance.CurrentProfile.Apps)
+            {
+                if (IsEliteApp(app))
+                {
+                    eliteAlreadyExists = true;
+                    existingElite = app;
+                    break;
+                }
+            }
+
+            if (eliteAlreadyExists)
+            {
+                EditEliteEntry(existingElite);
+            }
+            else
+            {
+                AddEliteToProfile();
+            }
+        }
+        private void AddEliteToProfile()
+        {
+            var eliteLauncherDialog = new EliteLauncherDialog();
+            eliteLauncherDialog.Owner = Application.Current.MainWindow;
+            eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            if (eliteLauncherDialog.ShowDialog() == true)
+            {
+                string args = eliteLauncherDialog.GetArgumentsString();
+
+                switch (eliteLauncherDialog.SelectedLauncher)
+                {
+                    case EliteLauncherDialog.LauncherType.Standard:
+                        // Scan for installation
+                        ScanAndAddElite(args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Steam:
+                        // Add Steam launcher
+                        AddEliteWebApp("Elite Dangerous (Steam)",
+                                      "steam://rungameid/359320",
+                                      args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Epic:
+                        // Add Epic launcher
+                        AddEliteWebApp("Elite Dangerous (Epic)",
+                                      "com.epicgames.launcher://apps/ed2aa564c5324fabab5af9d553a5c665%3A3c3d4ff38d0d4e889a1b399628d1ca7a%3Aaee9f2f7f3264eaa9c209943d3287e7d?action=launch&silent=true",
+                                      args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Legendary:
+                        // Add Legendary launcher
+                        AddEliteWebApp("Elite Dangerous (Legendary)",
+                                      "legendary://launch/ed2aa564c5324fabab5af9d553a5c665:3c3d4ff38d0d4e889a1b399628d1ca7a:aee9f2f7f3264eaa9c209943d3287e7d",
+                                      args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Manual:
+                        // Add manually selected path
+                        if (!string.IsNullOrEmpty(eliteLauncherDialog.ManualPath))
+                        {
+                            AddEliteManualPath(eliteLauncherDialog.ManualPath,
+                                             args);
+                        }
+                        break;
+                }
+            }
+        }        // New method to launch a single app without minimizing the window
+        private void LaunchSingleApp(MyApp app)
+        {
+            string args;
+            const string quote = "\"";
+            var path = $"{app.Path}/{app.ExeName}";
+
+            if (string.Equals(app.ExeName, "targetgui.exe", StringComparison.OrdinalIgnoreCase))
+            {
+                args = "-r " + quote + app.Args + quote;
+            }
+            else
+            {
+                args = app.Args;
+            }
+
+            if (File.Exists(path))
+            {
+                try
+                {
+                    var info = new ProcessStartInfo(path);
+                    info.Arguments = args;
+                    info.UseShellExecute = true;
+                    info.WorkingDirectory = app.Path;
+                    Process proc = Process.Start(info);
+
+                    // Only add to process list if it's Elite Dangerous
+                    if (proc.ProcessName == "EDLaunch" || proc.ProcessName == "EliteDangerous64")
+                    {
+                        proc.EnableRaisingEvents = true;
+                        processList.Add(proc.ProcessName);
+                        proc.Exited += new EventHandler(ProcessExitHandler);
+                    }
+
+                    Thread.Sleep(50);
+                    proc.Refresh();
+
+                    UpdateStatus($"Launched {app.Name}");
+                }
+                catch (Exception ex)
+                {
+                    UpdateStatus($"An error occurred trying to launch {app.Name}");
+                    Log.Error(ex, "Error launching app {AppName}", app.Name);
+                }
+            }
+            else if (!string.IsNullOrEmpty(app.WebAppURL))
+            {
+                string target = app.WebAppURL;
+                try
+                {
+                    Process proc = Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+
+                    // If launching Elite through a URL handler
+                    if (target.Contains("rungameid/359320") ||
+                        target.Contains("epic://launch") ||
+                        target.Contains("legendary://launch"))
+                    {
+                        // Add monitoring logic here similar to in LaunchApp method
+                        // But don't minimize the window
+
+                        // Need a longer delay as launcher process needs to start Elite
+                        Thread.Sleep(5000);
+
+                        // Try to find Elite processes - either EDLaunch or EliteDangerous64
+                        Process edLaunchProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
+                        if (edLaunchProc == null)
+                        {
+                            edLaunchProc = Process.GetProcessesByName("EliteDangerous64").FirstOrDefault();
+                        }
+
+                        if (edLaunchProc != null)
+                        {
+                            edLaunchProc.EnableRaisingEvents = true;
+                            edLaunchProc.Exited += new EventHandler(ProcessExitHandler);
+                            processList.Add(edLaunchProc.ProcessName);
+                        }
+                    }
+
+                    UpdateStatus("Launching " + app.Name);
+                }
+                catch (Exception ex)
+                {
+                    UpdateStatus($"An error occurred trying to launch {app.Name}");
+                    Log.Error(ex, "Error launching web app {AppName}", app.Name);
+                }
+            }
+            else
+            {
+                UpdateStatus($"Unable to launch {app.Name} - file not found");
+            }
+        }
         private void AddonDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             // Write the MyApp instances to the data source here, e.g.: SaveAppStateToFile();
@@ -264,13 +495,32 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         {
             if (AppState.Instance.CurrentProfile != null)
             {
+                // Check if Elite is missing from the profile
+                bool eliteExists = AppState.Instance.CurrentProfile.Apps.Any(app => IsEliteApp(app));
+
+                if (!eliteExists)
+                {
+                    // Ask if they want to add Elite specifically
+                    CustomDialog dialog = new CustomDialog("Would you like to add Elite Dangerous?");
+                    dialog.Owner = Application.Current.MainWindow;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    dialog.ShowDialog();
+
+                    if (dialog.Result == MessageBoxResult.Yes)
+                    {
+                        AddEliteToProfile();
+                        return;
+                    }
+                }
+
+                // Continue with normal app adding if they don't want to add Elite or Elite already exists
                 AddApp addAppWindow = new AddApp()
                 {
                     MainPageReference = this,
                     SelectedProfile = AppState.Instance.CurrentProfile,
                 };
                 // Set the owner and startup location
-                addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
+                addAppWindow.Owner = this;
                 addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 addAppWindow.Show();
                 AddonDataGrid.ItemsSource = AppState.Instance.CurrentProfile.Apps;
@@ -278,6 +528,10 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             else
             {
                 // Handle the case when no profile is selected.
+                CustomDialog dialog = new CustomDialog("Please create and select a profile first.");
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                dialog.ShowDialog();
             }
         }
 
@@ -348,15 +602,139 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             if (appToEdit != null)
             {
-                AddApp addAppWindow = new AddApp();
-                addAppWindow.AppToEdit = appToEdit; // Set the AppToEdit to the app you want to edit
-                addAppWindow.MainPageReference = this; // Assuming this is done from MainWindow, else replace 'this' with the instance of MainWindow
-                                                       // Set the owner and startup location
-                addAppWindow.Owner = this; // Or replace 'this' with reference to the main window
-                addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                addAppWindow.Title = "Edit App";
-                addAppWindow.ShowDialog();
+                // Check if this is an Elite Dangerous entry
+                bool isEliteEntry = appToEdit.Name.Contains("Elite Dangerous") ||
+                                    appToEdit.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase) ||
+                                    appToEdit.ExeName.Equals("EliteDangerous64.exe", StringComparison.OrdinalIgnoreCase) ||
+                                    appToEdit.WebAppURL?.Contains("rungameid/359320") == true ||
+                                    appToEdit.WebAppURL?.Contains("epic://launch") == true ||
+                                    appToEdit.WebAppURL?.Contains("legendary://launch") == true;
+
+                if (isEliteEntry)
+                {
+                    // Show the Elite Launcher dialog instead
+                    EditEliteEntry(appToEdit);
+                }
+                else
+                {
+                    // Show the standard app editor
+                    AddApp addAppWindow = new AddApp();
+                    addAppWindow.AppToEdit = appToEdit;
+                    addAppWindow.MainPageReference = this;
+                    addAppWindow.Owner = this;
+                    addAppWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    addAppWindow.Title = "Edit App";
+                    addAppWindow.ShowDialog();
+                }
             }
+        }
+        private void EditEliteEntry(MyApp eliteApp)
+        {
+            var eliteLauncherDialog = new EliteLauncherDialog(true, eliteApp);
+            eliteLauncherDialog.Owner = Application.Current.MainWindow;
+            eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            if (eliteLauncherDialog.ShowDialog() == true)
+            {
+                string args = eliteLauncherDialog.GetArgumentsString();
+
+                switch (eliteLauncherDialog.SelectedLauncher)
+                {
+                    case EliteLauncherDialog.LauncherType.Standard:
+                        // Keep existing entry if it's already edlaunch.exe
+                        if (!string.IsNullOrEmpty(eliteApp.ExeName) &&
+                            eliteApp.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Just update the arguments
+                            eliteApp.Args = args;
+                            eliteApp.WebAppURL = string.Empty; // Clear any web URL if present
+                        }
+                        else
+                        {
+                            ScanAndUpdateElite(eliteApp, args);
+                        }
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Steam:
+                        // For Steam, we'll set the Steam URI but also try to find a direct launcher path
+                        UpdateEliteToWebApp(eliteApp, "Elite Dangerous (Steam)", "steam://rungameid/359320", args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Epic:
+                        // Update to Epic version
+                        UpdateEliteToWebApp(eliteApp, "Elite Dangerous (Epic)",
+                            "com.epicgames.launcher://apps/ed2aa564c5324fabab5af9d553a5c665%3A3c3d4ff38d0d4e889a1b399628d1ca7a%3Aaee9f2f7f3264eaa9c209943d3287e7d?action=launch&silent=true", args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Legendary:
+                        // Update to Legendary version
+                        UpdateEliteToWebApp(eliteApp, "Elite Dangerous (Legendary)",
+                            "legendary://launch/ed2aa564c5324fabab5af9d553a5c665:3c3d4ff38d0d4e889a1b399628d1ca7a:aee9f2f7f3264eaa9c209943d3287e7d", args);
+                        break;
+
+                    case EliteLauncherDialog.LauncherType.Manual:
+                        // Update to manually selected path
+                        if (!string.IsNullOrEmpty(eliteLauncherDialog.ManualPath))
+                        {
+                            UpdateEliteToManualPath(eliteApp, eliteLauncherDialog.ManualPath, args);
+                        }
+                        break;
+                }
+
+                SaveProfilesAsync();
+            }
+        }
+        private async void ScanAndUpdateElite(MyApp eliteApp, string args)
+        {
+            var edLaunchPaths = await ScanComputerForEdLaunch();
+            if (edLaunchPaths.Count > 0)
+            {
+                eliteApp.Name = "Elite Dangerous";
+                eliteApp.ExeName = "edlaunch.exe";
+                eliteApp.Path = Path.GetDirectoryName(edLaunchPaths[0]);
+                eliteApp.WebAppURL = null;
+                eliteApp.Args = args;
+            }
+            else
+            {
+                ShowErrorMessage("Elite Dangerous not found",
+                                 "Elite Dangerous was not found on your computer. No changes were made.");
+            }
+        }
+        private void UpdateEliteToWebApp(MyApp eliteApp, string name, string url, string args)
+        {
+            eliteApp.Name = name;
+            eliteApp.WebAppURL = url;
+            eliteApp.ExeName = string.Empty;
+            eliteApp.Path = string.Empty;
+            eliteApp.Args = args; // Store args even for Steam, so they're preserved if switching back to direct launch
+        }
+
+        private void UpdateEliteToManualPath(MyApp eliteApp, string fullPath, string args)
+        {
+            eliteApp.Name = "Elite Dangerous";
+            eliteApp.ExeName = Path.GetFileName(fullPath);
+            eliteApp.Path = Path.GetDirectoryName(fullPath);
+            eliteApp.WebAppURL = null;
+            eliteApp.Args = args;
+        }
+
+        private void UpdateEliteToWebApp(MyApp eliteApp, string name, string url)
+        {
+            eliteApp.Name = name;
+            eliteApp.WebAppURL = url;
+            eliteApp.ExeName = string.Empty;
+            eliteApp.Path = string.Empty;
+            SaveProfilesAsync();
+        }
+
+        private void UpdateEliteToManualPath(MyApp eliteApp, string fullPath)
+        {
+            eliteApp.Name = "Elite Dangerous";
+            eliteApp.ExeName = Path.GetFileName(fullPath);
+            eliteApp.Path = Path.GetDirectoryName(fullPath);
+            eliteApp.WebAppURL = null;
+            SaveProfilesAsync();
         }
         public void ShowWhatsNewIfUpdated()
         {
@@ -427,9 +805,24 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 if (app.IsEnabled)
                 {
                     Btn_Launch.IsEnabled = false;
-                    LaunchApp(app);
+                    LaunchApp(app, sender as Button);
                     Log.Information("Launching {AppName}..", app.Name);
                 }
+            }
+
+            UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
+            // Minimize the window when using the main Launch button
+            this.WindowState = WindowState.Minimized;
+        }
+        protected override void OnStateChanged(EventArgs e)
+        {
+            base.OnStateChanged(e);
+
+            // If window was manually resized by the user
+            if (WindowState == WindowState.Normal)
+            {
+                // Switch to manual sizing to preserve the user's size
+                SizeToContent = SizeToContent.Manual;
             }
         }
 
@@ -444,7 +837,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 {
                     UpdateDataGrid();
                     DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
-                    if (!_isLoading) // Change here
+                    if (!_isLoading)
                     {
                         _isChecking = true;
                         CheckEdLaunchInProfile();
@@ -453,7 +846,6 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 }
             }
         }
-
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)  // this is the checkbox fo r the defaul profile
         {
@@ -537,18 +929,40 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 _ = SaveProfilesAsync();
             }
         }
+        // Add a field to track the launch source
+        private Button _launchSource = null;
 
-        private void LaunchApp(MyApp app) // function to launch enabled applications
+        // Modify LaunchApp to accept the source
+        private void LaunchApp(MyApp app, Button source = null)
         {
-            // set up a list to track which apps we launched
-
-            // different apps have different args, so lets set up a string to hold them
+            // Different apps have different args, so lets set up a string to hold them
             string args;
-            // TARGET requires a path to a script, if that path has spaces, we need to quote them -
-            // set a string called quote we can use to top and tail
             const string quote = "\"";
+
+            // For web launches (Steam, Epic, Legendary), just launch the URI
+            if (!string.IsNullOrEmpty(app.WebAppURL))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(app.WebAppURL) { UseShellExecute = true });
+                    UpdateStatus($"Launching {app.Name} via {app.WebAppURL}");
+
+                    // Only minimize window when using the main Launch button, not individual app launches
+                    if (app.Name.Contains("Elite Dangerous") && source != null && source.Equals(Btn_Launch))
+                    {
+                        this.WindowState = WindowState.Minimized;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UpdateStatus($"Error launching {app.Name}: {ex.Message}");
+                }
+                return;
+            }
+
             var path = $"{app.Path}/{app.ExeName}";
-            // are we launching TARGET?
+
+            // Are we launching TARGET?
             if (string.Equals(app.ExeName, "targetgui.exe", StringComparison.OrdinalIgnoreCase))
             {
                 // -r is to specify a script
@@ -560,7 +974,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 args = app.Args;
             }
 
-            if (File.Exists(path))      // worth checking the app we want to launch actually exists...
+            if (File.Exists(path))
             {
                 try
                 {
@@ -571,13 +985,20 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     Process proc = Process.Start(info);
                     proc.EnableRaisingEvents = true;
                     processList.Add(proc.ProcessName);
-                    // processList.Add(proc.ProcessName); <-- You'll need to define processList first
+
                     if (proc.ProcessName == "EDLaunch")
                     {
                         proc.Exited += new EventHandler(ProcessExitHandler);
                     }
+
                     Thread.Sleep(50);
                     proc.Refresh();
+
+                    // Only minimize window when using the main Launch button
+                    if (app.Name.Contains("Elite Dangerous") && source != null && source.Equals(Btn_Launch))
+                    {
+                        this.WindowState = WindowState.Minimized;
+                    }
                 }
                 catch
                 {
@@ -587,39 +1008,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
             else
             {
-                if (!string.IsNullOrEmpty(app.WebAppURL))
-                {
-                    string target = app.WebAppURL;
-                    Process proc = Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
-
-                    // If the app we're launching is via the steam URL, we anticipate that EDLaunch will run
-                    if (target.Equals("steam://rungameid/359320", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Small delay to give time for the EDLaunch process to start after Steam starts
-                        Thread.Sleep(2000);
-
-                        // Find the EDLaunch process and attach the event handler
-                        Process edLaunchProc = Process.GetProcessesByName("EDLaunch").FirstOrDefault();
-                        if (edLaunchProc != null)
-                        {
-                            edLaunchProc.EnableRaisingEvents = true;
-                            edLaunchProc.Exited += new EventHandler(ProcessExitHandler);
-                        }
-                    }
-
-                    UpdateStatus("Launching " + app.Name);
-                }
-                else
-                {
-                    UpdateStatus($"Unable to launch {app.Name}..");
-                }
+                UpdateStatus($"Unable to launch {app.Name}..");
             }
-            UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
-            // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to
-            // define notifyIcon1 first
-            this.WindowState = WindowState.Minimized;
         }
-
         private async Task<Settings> LoadSettingsAsync()
         {
             string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -672,6 +1063,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     AppState.Instance.CurrentProfile = newProfile;
 
                     await SaveProfilesAsync();
+                    AdjustWindowSizeToContent();
                     UpdateDataGrid();
                 }
             }
@@ -694,6 +1086,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 _isChecking = false;
             }
             ShowWhatsNewIfUpdated();
+            AdjustWindowSizeToContent();
         }
 
 
@@ -868,7 +1261,6 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         public static async Task<List<string>> ScanComputerForEdLaunch()
         {
             List<string> foundPaths = new List<string>();
-            string targetFolder = "Elite Dangerous";
             string targetFile = "edlaunch.exe";
             var tokenSource = new CancellationTokenSource();
             var token = tokenSource.Token;
@@ -881,49 +1273,108 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             progressWindow.Show(); // Show the window before starting the task
 
-            await Task.Run(() =>
+            try
             {
-                try
+                await Task.Run(() =>
                 {
-                    foreach (DriveInfo drive in DriveInfo.GetDrives())
+                    // Common installation locations to check first
+                    string[] commonLocations = new string[]
+                    {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Frontier", "EDLaunch"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "steamapps", "common", "Elite Dangerous"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Frontier_Developments", "Products")
+                    };
+
+                    // Check common locations first
+                    foreach (string location in commonLocations)
                     {
                         if (token.IsCancellationRequested)
                             break;
 
-                        if (drive.DriveType == DriveType.Fixed)
+                        try
                         {
-                            try
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                string driveRoot = drive.RootDirectory.ToString();
-                                if (TraverseDirectories(driveRoot, targetFolder, targetFile, foundPaths, progressWindow, 7, token))
+                                progressWindow.searchStatusTextBlock.Text = $"Checking: {location}";
+                            });
+
+                            if (Directory.Exists(location))
+                            {
+                                string edLaunchPath = Path.Combine(location, targetFile);
+                                if (File.Exists(edLaunchPath))
                                 {
+                                    foundPaths.Add(edLaunchPath);
                                     break;
                                 }
+
+                                // Search subdirectories 
+                                foreach (string subDir in Directory.GetDirectories(location))
+                                {
+                                    if (token.IsCancellationRequested)
+                                        break;
+
+                                    string subEdLaunchPath = Path.Combine(subDir, targetFile);
+                                    if (File.Exists(subEdLaunchPath))
+                                    {
+                                        foundPaths.Add(subEdLaunchPath);
+                                        break;
+                                    }
+                                }
                             }
-                            catch (UnauthorizedAccessException)
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warning(ex, "Error checking location {Location}", location);
+                        }
+                    }
+
+                    // If not found in common locations, do a more extensive search
+                    if (foundPaths.Count == 0)
+                    {
+                        foreach (DriveInfo drive in DriveInfo.GetDrives())
+                        {
+                            if (token.IsCancellationRequested)
+                                break;
+
+                            if (drive.DriveType == DriveType.Fixed)
                             {
-                                // If we don't have access to the directory, skip it
-                            }
-                            catch (IOException)
-                            {
-                                // If another error occurs, skip it
+                                try
+                                {
+                                    string driveRoot = drive.RootDirectory.ToString();
+                                    TraverseDirectories(driveRoot, "Elite Dangerous", targetFile, foundPaths, progressWindow, 4, token);
+                                    if (foundPaths.Count > 0)
+                                        break;
+
+                                    // Also check for Frontier folder
+                                    TraverseDirectories(driveRoot, "Frontier", targetFile, foundPaths, progressWindow, 4, token);
+                                    if (foundPaths.Count > 0)
+                                        break;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Warning(ex, "Error scanning drive {Drive}", drive.Name);
+                                }
                             }
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    // If operation is canceled, return
-                    return;
-                }
-            }, token);
-
-            if (progressWindow.IsVisible)
-                progressWindow.Close();
+                }, token);
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Information("Elite Dangerous scan was canceled by user");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during Elite Dangerous installation scan");
+            }
+            finally
+            {
+                if (progressWindow.IsVisible)
+                    progressWindow.Close();
+            }
 
             return foundPaths;
         }
-
         public static bool TraverseDirectories(string root, string targetFolder, string targetFile, List<string> foundPaths, SearchProgressWindow window, int maxDepth, CancellationToken token, int currentDepth = 0)
         {
             // Array of directories to exclude
@@ -1112,6 +1563,81 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
         }
 
+
+        // Helper method to add Elite Dangerous web link (Steam/Epic/Legendary)
+        private async void AddEliteWebApp(string name, string url, string args)
+        {
+            var app = new MyApp
+            {
+                Name = name,
+                WebAppURL = url,
+                Args = args,
+                IsEnabled = true,
+                Order = 0
+            };
+
+            AppState.Instance.CurrentProfile.Apps.Add(app);
+            await SaveProfilesAsync();
+            UpdateDataGrid();
+        }
+        private bool IsEliteApp(MyApp app)
+        {
+            if (app == null)
+                return false;
+
+            // Check if it's a local Elite exe
+            if (!string.IsNullOrEmpty(app.ExeName) &&
+                (app.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase) ||
+                 app.ExeName.Equals("EliteDangerous64.exe", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            // Check if it's a web launcher for Elite
+            if (!string.IsNullOrEmpty(app.WebAppURL) &&
+                (app.WebAppURL.Contains("rungameid/359320") ||
+                 app.WebAppURL.Contains("epic://launch") ||
+                 app.WebAppURL.Contains("legendary://launch")))
+            {
+                return true;
+            }
+
+            // Check if the name explicitly indicates it's Elite Dangerous
+            if (!string.IsNullOrEmpty(app.Name) &&
+                app.Name.StartsWith("Elite Dangerous", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        private void AddEliteDirectly()
+        {
+            // If Elite is already in this profile, we should open the edit dialog instead
+            bool eliteAlreadyExists = false;
+            MyApp existingElite = null;
+
+            foreach (var app in AppState.Instance.CurrentProfile.Apps)
+            {
+                if (IsEliteApp(app))
+                {
+                    eliteAlreadyExists = true;
+                    existingElite = app;
+                    break;
+                }
+            }
+
+            if (eliteAlreadyExists)
+            {
+                EditEliteEntry(existingElite);
+            }
+            else
+            {
+                AddEliteToProfile();
+            }
+        }
+
+
         private async void CheckEdLaunchInProfile()
         {
             // Get the current profile
@@ -1120,48 +1646,113 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             {
                 return;
             }
-            // Check if edlaunch.exe exists in the current profile
-            if (!currentProfile.Apps.Any(a => a.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase)
-                                || a.WebAppURL?.Equals("steam://rungameid/359320", StringComparison.OrdinalIgnoreCase) == true))
-            {
-                // edlaunch.exe does not exist in the current profile Prompt the user with a dialog
-                // offering to scan their computer for it
-                CustomDialog dialog = new CustomDialog("Elite Dangerous does not exist in the current profile. Would you like to scan your computer for it?");
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                dialog.ShowDialog();
 
-                // If the user clicked Yes, call the method that scans the computer for edlaunch.exe
-                if (dialog.Result == MessageBoxResult.Yes)
+            // Check if Elite Dangerous exists in the current profile using our helper method
+            if (!currentProfile.Apps.Any(IsEliteApp))
+            {
+                // Show our new enhanced dialog
+                var eliteLauncherDialog = new EliteLauncherDialog();
+                eliteLauncherDialog.Owner = Application.Current.MainWindow;
+                eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                if (eliteLauncherDialog.ShowDialog() == true)
                 {
-                    var EdLuanchPaths = await ScanComputerForEdLaunch(); // Note the "await" keyword here
-                    if (EdLuanchPaths.Count > 0)
+                    switch (eliteLauncherDialog.SelectedLauncher)
                     {
-                        // Add edlaunch.exe to the current profile
-                        var edlaunch = new MyApp
-                        {
-                            Name = "Elite Dangerous",
-                            ExeName = "edlaunch.exe",
-                            Path = Path.GetDirectoryName(EdLuanchPaths[0]),
-                            IsEnabled = true,
-                            Order = 0
-                        };
-                        currentProfile.Apps.Add(edlaunch);
-                        await SaveProfilesAsync(); // You can also "await" here since SaveProfilesAsync is probably asynchronous
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            "edlaunch.exe was not found on your computer. Please add it manually.",
-                            "edlaunch.exe Not Found",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error
-                        );
+                        case EliteLauncherDialog.LauncherType.Standard:
+                            // Show a progress dialog while scanning
+                            Log.Information("Starting scan for Elite Dangerous installation");
+                            var edLaunchPaths = await ScanComputerForEdLaunch();
+
+                            if (edLaunchPaths != null && edLaunchPaths.Count > 0)
+                            {
+                                string path = edLaunchPaths[0];
+                                Log.Information("Found Elite Dangerous at: {Path}", path);
+                                string exeName = Path.GetFileName(path);
+                                string dirPath = Path.GetDirectoryName(path);
+
+                                var edlaunch = new MyApp
+                                {
+                                    Name = "Elite Dangerous",
+                                    ExeName = exeName,
+                                    Path = dirPath,
+                                    Args = eliteLauncherDialog.GetArgumentsString(),
+                                    IsEnabled = true,
+                                    Order = 0
+                                };
+
+                                AppState.Instance.CurrentProfile.Apps.Add(edlaunch);
+                                await SaveProfilesAsync();
+                                Log.Information("Added Elite Dangerous to profile with arguments: {Args}",
+                                    eliteLauncherDialog.GetArgumentsString());
+                            }
+                            else
+                            {
+                                ShowErrorMessage("Elite Dangerous not found",
+                                                "Elite Dangerous was not found on your computer. Please select another option.");
+                                Log.Warning("No Elite Dangerous installation found during scan");
+                            }
+                            break;
+
+                            // Other cases remain the same...
                     }
                 }
             }
+        }        // Helper method to add Elite Dangerous to current profile from file path
+
+        private async void AddEliteManualPath(string fullPath, string args)
+        {
+            var app = new MyApp
+            {
+                Name = "Elite Dangerous",
+                ExeName = Path.GetFileName(fullPath),
+                Path = Path.GetDirectoryName(fullPath),
+                Args = args,
+                IsEnabled = true,
+                Order = 0
+            };
+
+            AppState.Instance.CurrentProfile.Apps.Add(app);
+            await SaveProfilesAsync();
+            UpdateDataGrid();
+        }
+        private async void ScanAndAddElite(string args)
+        {
+            var edLaunchPaths = await ScanComputerForEdLaunch();
+            if (edLaunchPaths.Count > 0)
+            {
+                var edlaunch = new MyApp
+                {
+                    Name = "Elite Dangerous",
+                    ExeName = "edlaunch.exe",
+                    Path = Path.GetDirectoryName(edLaunchPaths[0]),
+                    Args = args,
+                    IsEnabled = true,
+                    Order = 0
+                };
+
+                AppState.Instance.CurrentProfile.Apps.Add(edlaunch);
+                await SaveProfilesAsync();
+                UpdateDataGrid();
+            }
+            else
+            {
+                ShowErrorMessage("Elite Dangerous not found",
+                              "Elite Dangerous was not found on your computer. Please select another option.");
+            }
         }
 
+
+
+        // Helper method to show error message
+        private void ShowErrorMessage(string title, string message)
+        {
+            ErrorDialog dialog = new ErrorDialog(message);
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            dialog.Title = title;
+            dialog.ShowDialog();
+        }
         private void CloseAllAppsCheckbox_Checked_1(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.CloseAllAppsOnExit = true;

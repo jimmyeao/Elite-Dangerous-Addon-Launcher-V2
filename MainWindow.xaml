@@ -6,16 +6,20 @@
     x:Name="Main"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
-    xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Elite_Dangerous_Addon_Launcher_V2.MainWindow"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="av" 
+    x:Class="Elite_Dangerous_Addon_Launcher_V2.MainWindow"
     Title="{Binding ElementName=Main, Path=ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
-    Height="450" Width="741"
+    Width="741"
+    MinWidth="741"
+    MinHeight="300"
     TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-        Background="{DynamicResource MaterialDesign.Brush.Background}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
     TextElement.FontWeight="Regular"
     TextElement.FontSize="13"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
-    
     FontFamily="{DynamicResource MaterialDesignFont}">
 
     <Window.Resources>
@@ -49,10 +53,11 @@
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="Bt_AddApp" Content="Add App" Width="131" Margin="10,0"
+                <Button x:Name="Bt_AddApp" Content="Add App" Width="101" Margin="10,0"
                         Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
                 <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
-                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="131" />
+                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="116" />
+               
 
                 <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
                 <ComboBox x:Name="Cb_Profiles" 
@@ -110,8 +115,9 @@
           dd:DragDrop.IsDropTarget="True" 
           dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
           Style="{StaticResource MaterialDesignDataGrid}"
-          ContextMenuOpening="AddonDataGrid_ContextMenuOpening">
-
+          ContextMenuOpening="AddonDataGrid_ContextMenuOpening"
+          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
                         <Setter Property="ContextMenu" Value="{StaticResource myContextMenu}"/>
@@ -124,6 +130,13 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Launch">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Launch" Click="Btn_LaunchSingle_Click" CommandParameter="{Binding}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

@@ -20,7 +20,8 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBox x:Name="TbProfileName" Grid.Row="0" Margin="10" />
+                <TextBox x:Name="TbProfileName" Grid.Row="0" Margin="10" 
+         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
                 <Button x:Name="BtnOk" Grid.Row="1" Margin="10" Content="OK" Click="BtnOk_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
             </Grid>
