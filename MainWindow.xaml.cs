@@ -207,14 +207,14 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             // Write the JSON string to the file
             await File.WriteAllTextAsync(path, profilesJson);
+            AdjustWindowSizeToContent();
         }
 
         public void UpdateDataGrid()
         {
-            // Assuming 'AddonDataGrid' is the name of your DataGrid control
+            // Set DataGrid's ItemsSource to the apps of the currently selected profile
             if (AppState.Instance.CurrentProfile != null)
             {
-                // Set DataGrid's ItemsSource to the apps of the currently selected profile
                 AddonDataGrid.ItemsSource = AppState.Instance.CurrentProfile.Apps;
             }
             else
@@ -222,8 +222,59 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 // No profile is selected. Clear the data grid.
                 AddonDataGrid.ItemsSource = null;
             }
-        }
 
+            // Resize the window to fit content
+            AdjustWindowSizeToContent();
+        }
+        private void AdjustWindowSizeToContent()
+        {
+            // Give the UI time to update
+            Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    // Calculate the required height based on the number of items in the grid
+                    double headerHeight = 150;  // Space for controls at top
+                    double footerHeight = 50;   // Increased padding at bottom for less cramped look
+                    double rowHeight = 48;      // Approximate height of each row
+
+                    int itemCount = 0;
+                    if (AppState.Instance.CurrentProfile?.Apps != null)
+                    {
+                        itemCount = AppState.Instance.CurrentProfile.Apps.Count;
+                    }
+
+                    // Calculate the required window height
+                    double requiredHeight = headerHeight + (itemCount * rowHeight) + footerHeight;
+
+                    // Set minimum height
+                    double minHeight = 300;
+                    requiredHeight = Math.Max(requiredHeight, minHeight);
+
+                    // Set maximum height to avoid excessively tall windows
+                    double maxHeight = 800;
+                    requiredHeight = Math.Min(requiredHeight, maxHeight);
+
+                    // Set the window height directly
+                    this.Height = requiredHeight;
+
+                    // Ensure window is within screen bounds
+                    if (this.Top + this.Height > SystemParameters.VirtualScreenHeight)
+                    {
+                        this.Top = Math.Max(0, SystemParameters.VirtualScreenHeight - this.Height);
+                    }
+
+                    // Force layout update
+                    this.UpdateLayout();
+
+                    Log.Information($"Window resized to height: {this.Height} for {itemCount} items");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error adjusting window size");
+                }
+            }, System.Windows.Threading.DispatcherPriority.Render);
+        }
         protected virtual void OnPropertyChanged(string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -439,7 +490,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 {
                     UpdateDataGrid();
                     DefaultCheckBox.IsChecked = selectedProfile.IsDefault;
-                    if (!_isLoading) // Change here
+                    if (!_isLoading)
                     {
                         _isChecking = true;
                         CheckEdLaunchInProfile();
@@ -609,6 +660,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     UpdateStatus($"Unable to launch {app.Name}..");
                 }
             }
+
             UpdateStatus("All apps launched, waiting for EDLaunch Exit..");
             // notifyIcon1.BalloonTipText = "All Apps running, waiting for exit"; <-- You'll need to
             // define notifyIcon1 first
@@ -634,7 +686,31 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             Log.Information("Settings loaded: {Settings}", settings);
             return settings;
         }
+        private void Btn_LaunchSingle_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            MyApp appToLaunch = button.CommandParameter as MyApp;
 
+            if (appToLaunch != null)
+            {
+                // Disable the main launch button while an app is being launched
+                Btn_Launch.IsEnabled = false;
+
+                // Launch just this one app
+                LaunchApp(appToLaunch);
+                Log.Information("Launching single app: {AppName}", appToLaunch.Name);
+
+                // If this is not Elite Dangerous (which would keep the button disabled),
+                // re-enable the launch button
+                if (!appToLaunch.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase) &&
+                    !appToLaunch.WebAppURL?.Contains("rungameid/359320") == true &&
+                    !appToLaunch.WebAppURL?.Contains("epic://launch") == true &&
+                    !appToLaunch.WebAppURL?.Contains("legendary://launch") == true)
+                {
+                    Btn_Launch.IsEnabled = true;
+                }
+            }
+        }
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             _isLoading = true;
