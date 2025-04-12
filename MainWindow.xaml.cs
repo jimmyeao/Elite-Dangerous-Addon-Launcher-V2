@@ -619,6 +619,36 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             {
                 args = app.Args;
             }
+            // Handle .appref-ms ClickOnce apps
+            if (app.ExeName.EndsWith(".appref-ms", StringComparison.OrdinalIgnoreCase))
+            {
+                var shortcutPath = Path.Combine(app.Path, app.ExeName);
+
+                if (File.Exists(shortcutPath))
+                {
+                    try
+                    {
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = shortcutPath,
+                            UseShellExecute = true // Required to launch shortcuts
+                        };
+                        Process.Start(psi);
+                        UpdateStatus($"Launching {app.Name} via .appref-ms shortcut...");
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus($"Failed to launch {app.Name} via .appref-ms: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    UpdateStatus($"Shortcut not found: {shortcutPath}");
+                }
+
+                return; // We're done
+            }
+
 
             if (File.Exists(path))
             {

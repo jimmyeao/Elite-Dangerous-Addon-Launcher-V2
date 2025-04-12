@@ -58,18 +58,32 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private void Bt_BrowsePath_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Executable files (*.exe;*.appref-ms)|*.exe;*.appref-ms|All files (*.*)|*.*"
+            };
+
             if (openFileDialog.ShowDialog() == true)
             {
                 string fullPath = openFileDialog.FileName;
-
                 var fileName = Path.GetFileName(fullPath);
                 var directory = Path.GetDirectoryName(fullPath);
 
                 Tb_AppPath.Text = directory;
                 Tb_AppExeName.Text = fileName;
+
+                // If it's a ClickOnce shortcut, clear the args field and show a note
+                if (fileName.EndsWith(".appref-ms", StringComparison.OrdinalIgnoreCase))
+                {
+                    Tb_App_Args.Text = string.Empty;
+                    Cb_Enable.IsChecked = true;
+
+                    // Optionally inform user it's a shortcut app
+                    Tb_App_Args.ToolTip = "Arguments not required for ClickOnce shortcuts (.appref-ms)";
+                }
             }
         }
+
         private void CheckBox1_Checked(object sender, RoutedEventArgs e)
         {
             if (!Tb_App_Args.Text.Contains("/autorun"))
