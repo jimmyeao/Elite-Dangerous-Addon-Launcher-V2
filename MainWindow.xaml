@@ -79,6 +79,7 @@
                       Margin="0,0,10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
                 <Button x:Name="Btn_Launch" Grid.Column="5" Content="Launch" 
                     Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" 
+                        Margin="0,0,10,0"
                     MinWidth="106" HorizontalAlignment="Right" />
             </Grid>
 
