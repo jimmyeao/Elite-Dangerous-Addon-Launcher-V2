@@ -52,26 +52,35 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="Bt_AddApp" Content="Add App" Width="101" Margin="10,0"
-                        Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
-                <Button Content="Toggle Theme" Click="ToggleThemeButton_Click"
-                        Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="116" />
-               
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
-                <ComboBox x:Name="Cb_Profiles" 
-                          ItemsSource="{Binding Profiles}"
-                          SelectedItem="{Binding CurrentProfile}"
-                          DisplayMemberPath="Name"
-                          SelectionChanged="Cb_Profiles_SelectionChanged"
-                          Width="137" />
-                <CheckBox x:Name="DefaultCheckBox" Content="Default"  
-                          IsChecked="{Binding IsDefault, Mode=TwoWay}" 
-                          Margin="10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
-                <Button x:Name="Btn_Launch" Content="Launch" Width="106"
-                        Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
-            </StackPanel>
+                <Button x:Name="Bt_AddApp" Grid.Column="0" Content="Add App" Width="131" Margin="0,0,10,0"
+                    Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                <Button Grid.Column="1" Content="Toggle Theme" Click="ToggleThemeButton_Click"
+                    Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="131" />
+
+                <TextBlock Grid.Column="2" Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <ComboBox x:Name="Cb_Profiles" Grid.Column="3"
+                      ItemsSource="{Binding Profiles}"
+                      SelectedItem="{Binding CurrentProfile}"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="Cb_Profiles_SelectionChanged"
+                      Width="137" Margin="0,0,10,0" />
+                <CheckBox x:Name="DefaultCheckBox" Grid.Column="4" Content="Default"  
+                      IsChecked="{Binding IsDefault, Mode=TwoWay}" 
+                      Margin="0,0,10,0" Height="15" Checked="DefaultCheckbox_Checked" Unchecked="CheckBox_Unchecked" />
+                <Button x:Name="Btn_Launch" Grid.Column="5" Content="Launch" 
+                    Click="Btn_Launch_Click" Style="{DynamicResource MaterialDesignRaisedButton}" 
+                    MinWidth="106" HorizontalAlignment="Right" />
+            </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                 <Expander Header="Profiles.." Width="200">
@@ -85,12 +94,12 @@
                         <Button x:Name="Logs" Content="Logs" Click="Btn_ShowLogs" Style="{DynamicResource MaterialDesignRaisedButton}" />
                     </StackPanel>
                 </Expander>
-               
+
                 <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit"
-                          DataContext="{x:Static local:AppState.Instance}"
-                          IsChecked="{Binding CloseAllApps, Mode=TwoWay}" Checked="CloseAllAppsCheckbox_Checked_1" Unchecked ="CloseAllAppsCheckbox_Unchecked_1"
-                           
-                          />
+                      DataContext="{x:Static local:AppState.Instance}"
+                      IsChecked="{Binding CloseAllApps, Mode=TwoWay}" Checked="CloseAllAppsCheckbox_Checked_1" Unchecked ="CloseAllAppsCheckbox_Unchecked_1"
+                       Margin="10,0,0,0" VerticalAlignment="Center"
+                      />
             </StackPanel>
         </StackPanel>
 
@@ -100,6 +109,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Changes for AddonDataGrid in MainWindow.xaml -->
             <DataGrid x:Name="AddonDataGrid"
           Grid.Column="0"
           AutoGenerateColumns="False" 
@@ -116,38 +126,32 @@
           dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}" 
           Style="{StaticResource MaterialDesignDataGrid}"
           ContextMenuOpening="AddonDataGrid_ContextMenuOpening"
-          ScrollViewer.VerticalScrollBarVisibility="Disabled"
-          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <DataGrid.RowStyle>
-                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
-                        <Setter Property="ContextMenu" Value="{StaticResource myContextMenu}"/>
-                    </Style>
-                </DataGrid.RowStyle>
-
+          ScrollViewer.VerticalScrollBarVisibility="Auto"
+          ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" />
-                    <DataGridTemplateColumn Header="Enabled">
+                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="*" />
+                    <DataGridTemplateColumn Header="Enabled" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Launch">
+                    <DataGridTemplateColumn Header="Launch" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="Launch" Click="Btn_LaunchSingle_Click" CommandParameter="{Binding}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Edit">
+                    <DataGridTemplateColumn Header="Edit" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="Edit" Click="Btn_Edit_Click" CommandParameter="{Binding}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Delete">
+                    <DataGridTemplateColumn Header="Delete" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="Delete" Click="DeleteButton_Click"/>
@@ -156,15 +160,12 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-
-
             <Image Source="/app.png" 
-                   Grid.Column="1" 
-                   Width="125" 
-                   Margin="10,0" 
-                   Height="128" 
-                   VerticalAlignment="Top" />
-
+               Grid.Column="1" 
+               Width="125" 
+               Margin="10,0" 
+               Height="128" 
+               VerticalAlignment="Top" />
         </Grid>
     </Grid>
 </Window>
