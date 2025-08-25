@@ -24,6 +24,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -33,8 +34,18 @@
                            TextWrapping="Wrap" 
                            Style="{DynamicResource MaterialDesignBody1TextBlock}"
                            Margin="0,0,0,16"/>
+                           
+                <TextBlock x:Name="CurrentConfigText"
+                           Grid.Row="1" 
+                           Visibility="Collapsed"
+                           Text="Current configuration: Steam Version"
+                           TextWrapping="Wrap" 
+                           Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                           Style="{DynamicResource MaterialDesignCaptionTextBlock}"
+                           Margin="0,0,0,12"/>
+                           
                 <TextBlock x:Name="SteamWarningText"
-                   Grid.Row="1"
+                   Grid.Row="2"
                    Visibility="Collapsed"
                    Text="Note: Command-line arguments may not work&#x0a;with alternate launchers. For VR mode,&#x0a;consider using the Standard installation."
                    TextWrapping="Wrap"
@@ -43,7 +54,7 @@
                    Margin="0,0,0,16"/>
 
 
-                <StackPanel Grid.Row="2" Orientation="Vertical">
+                <StackPanel Grid.Row="3" Orientation="Vertical">
                     <Button x:Name="StandardButton"
                             Content="Standard Installation (Scan Computer)"
                             Click="StandardButton_Click"
@@ -86,7 +97,7 @@
                 </StackPanel>
 
                 <!-- Launch Options -->
-                <materialDesign:Card Grid.Row="3" 
+                <materialDesign:Card Grid.Row="4" 
                                     Background="{DynamicResource MaterialDesignBackground.Brush.Background}"
                                     Margin="0,16,0,16"
                                     Padding="8">
@@ -115,7 +126,7 @@
                     </StackPanel>
                 </materialDesign:Card>
 
-                <StackPanel Grid.Row="4" 
+                <StackPanel Grid.Row="5" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Right" 
                             VerticalAlignment="Bottom">

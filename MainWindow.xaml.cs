@@ -50,7 +50,12 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         private bool isDarkTheme = false;
         private string logpath;
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-        private Settings settings;
+        private Settings settings = new Settings(); // Initialize with defaults to prevent null reference
+        
+        // Elite process monitoring
+        private readonly HashSet<Process> _monitoredEliteProcesses = new HashSet<Process>();
+        private readonly object _processLock = new object();
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("300")]
@@ -508,6 +513,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         protected override void OnClosed(EventArgs e)
         {
+            // Clean up monitored Elite processes
+            CleanupEliteProcessMonitoring();
+            
             base.OnClosed(e);
 
             // Save current window size and position
@@ -581,6 +589,136 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             return string.Join(Path.DirectorySeparatorChar, parts.Take(maxParts));
         }
 
+        // Add Elite process monitoring methods
+        private async void MonitorEliteProcessesAsync()
+        {
+            Log.Information("Starting Elite process monitoring...");
+            
+            await Task.Run(() =>
+            {
+                // Wait for Elite processes to start (Steam can take a few seconds)
+                for (int i = 0; i < 20; i++) // Try for up to 10 seconds
+                {
+                    var edLaunchProcesses = Process.GetProcessesByName("EDLaunch");
+                    var eliteProcesses = Process.GetProcessesByName("EliteDangerous64");
+                    
+                    lock (_processLock)
+                    {
+                        // Monitor EDLaunch processes
+                        foreach (var proc in edLaunchProcesses)
+                        {
+                            if (!_monitoredEliteProcesses.Any(p => p.Id == proc.Id))
+                            {
+                                proc.EnableRaisingEvents = true;
+                                proc.Exited += EliteProcessExitHandler;
+                                _monitoredEliteProcesses.Add(proc);
+                                processList.Add(proc.ProcessName);
+                                Log.Information("Now monitoring EDLaunch process (ID: {ProcessId})", proc.Id);
+                            }
+                        }
+                        
+                        // Monitor EliteDangerous64 processes
+                        foreach (var proc in eliteProcesses)
+                        {
+                            if (!_monitoredEliteProcesses.Any(p => p.Id == proc.Id))
+                            {
+                                proc.EnableRaisingEvents = true;
+                                proc.Exited += EliteProcessExitHandler;
+                                _monitoredEliteProcesses.Add(proc);
+                                processList.Add(proc.ProcessName);
+                                Log.Information("Now monitoring EliteDangerous64 process (ID: {ProcessId})", proc.Id);
+                            }
+                        }
+                        
+                        // If we found processes, we're done
+                        if (_monitoredEliteProcesses.Count > 0)
+                        {
+                            Log.Information("Found and monitoring {Count} Elite processes", _monitoredEliteProcesses.Count);
+                            break;
+                        }
+                    }
+                    
+                    Thread.Sleep(500);
+                }
+            });
+        }
+        
+        private void EliteProcessExitHandler(object sender, EventArgs e)
+        {
+            var exitedProcess = sender as Process;
+            if (exitedProcess != null)
+            {
+                // Safely get process information - these properties may not be available after exit
+                string processName = "Unknown";
+                int processId = -1;
+                
+                try
+                {
+                    processName = exitedProcess.ProcessName;
+                    processId = exitedProcess.Id;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Process has already exited and information is no longer available
+                    processName = "Elite Process";
+                    processId = -1;
+                }
+                
+                Log.Information("Elite process exited: {ProcessName} (ID: {ProcessId})", processName, processId);
+                
+                lock (_processLock)
+                {
+                    // Remove the process from monitoring - use object reference instead of ID
+                    _monitoredEliteProcesses.Remove(exitedProcess);
+                    Log.Information("Remaining Elite processes being monitored: {Count}", _monitoredEliteProcesses.Count);
+                    
+                    // Only trigger close apps when ALL Elite processes have exited
+                    if (_monitoredEliteProcesses.Count == 0)
+                    {
+                        Log.Information("All Elite processes have exited, triggering ProcessExitHandler");
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            ProcessExitHandler(sender, e);
+                        });
+                    }
+                }
+            }
+        }
+        
+        private void CleanupEliteProcessMonitoring()
+        {
+            lock (_processLock)
+            {
+                foreach (var process in _monitoredEliteProcesses.ToList())
+                {
+                    try
+                    {
+                        process.Exited -= EliteProcessExitHandler;
+                        
+                        // Check if process has exited before trying to disable events
+                        try
+                        {
+                            if (!process.HasExited)
+                            {
+                                process.EnableRaisingEvents = false;
+                            }
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Process has already exited, no need to disable events
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Use a generic identifier since process properties may not be accessible
+                        Log.Warning(ex, "Error cleaning up process monitoring for an Elite process");
+                    }
+                }
+                _monitoredEliteProcesses.Clear();
+                Log.Information("Elite process monitoring cleaned up");
+            }
+        }
+
         private void AddEliteDirectly()
         {
             // If Elite is already in this profile, we should open the edit dialog instead
@@ -652,12 +790,20 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private void AddEliteToProfile()
         {
-            var eliteLauncherDialog = new EliteLauncherDialog();
+            string preferredType = settings?.EliteInstallType ?? "Standard";
+            Log.Information("Creating EliteLauncherDialog for adding Elite - preferredType: '{PreferredType}'", preferredType);
+            var eliteLauncherDialog = new EliteLauncherDialog(false, null, preferredType);
             eliteLauncherDialog.Owner = Application.Current.MainWindow;
             eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             if (eliteLauncherDialog.ShowDialog() == true)
             {
+                // Save the user's preferred launcher type
+                string selectedLauncherString = eliteLauncherDialog.SelectedLauncher.ToString();
+                Log.Information("User selected launcher type: {LauncherType}, saving to settings", selectedLauncherString);
+                settings.EliteInstallType = selectedLauncherString;
+                _ = SaveSettingsAsync(settings);
+                
                 string args = eliteLauncherDialog.GetArgumentsString();
 
                 switch (eliteLauncherDialog.SelectedLauncher)
@@ -1005,15 +1151,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             if (appToEdit != null)
             {
-                // Check if this is an Elite Dangerous entry
-                bool isEliteEntry = appToEdit.Name.Contains("Elite Dangerous") ||
-                                    appToEdit.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase) ||
-                                    appToEdit.ExeName.Equals("EliteDangerous64.exe", StringComparison.OrdinalIgnoreCase) ||
-                                    appToEdit.WebAppURL?.Contains("rungameid/359320") == true ||
-                                    appToEdit.WebAppURL?.Contains("epic://launch") == true ||
-                                    appToEdit.WebAppURL?.Contains("legendary://launch") == true;
-
-                if (isEliteEntry)
+                // Use the existing IsEliteApp helper method for more precise detection
+                if (IsEliteApp(appToEdit))
                 {
                     // Show the Elite Launcher dialog instead
                     EditEliteEntry(appToEdit);
@@ -1145,12 +1284,20 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             if (!currentProfile.Apps.Any(IsEliteApp))
             {
                 // Show our new enhanced dialog
-                var eliteLauncherDialog = new EliteLauncherDialog();
+                string preferredType = settings?.EliteInstallType ?? "Standard";
+                Log.Information("Creating EliteLauncherDialog for auto-add Elite - preferredType: '{PreferredType}'", preferredType);
+                var eliteLauncherDialog = new EliteLauncherDialog(false, null, preferredType);
                 eliteLauncherDialog.Owner = Application.Current.MainWindow;
                 eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
                 if (eliteLauncherDialog.ShowDialog() == true)
                 {
+                    // Save the user's preferred launcher type
+                    string selectedLauncherString = eliteLauncherDialog.SelectedLauncher.ToString();
+                    Log.Information("User selected launcher type (auto-add): {LauncherType}, saving to settings", selectedLauncherString);
+                    settings.EliteInstallType = selectedLauncherString;
+                    _ = SaveSettingsAsync(settings);
+                    
                     switch (eliteLauncherDialog.SelectedLauncher)
                     {
                         case EliteLauncherDialog.LauncherType.Standard:
@@ -1278,14 +1425,22 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
         }
 
-        private void EditEliteEntry(MyApp eliteApp)
+        private async void EditEliteEntry(MyApp eliteApp)
         {
-            var eliteLauncherDialog = new EliteLauncherDialog(true, eliteApp);
+            string preferredType = settings?.EliteInstallType ?? "Standard";
+            Log.Information("Creating EliteLauncherDialog for editing Elite - preferredType: '{PreferredType}', existing app name: '{AppName}'", preferredType, eliteApp?.Name);
+            var eliteLauncherDialog = new EliteLauncherDialog(true, eliteApp, preferredType);
             eliteLauncherDialog.Owner = Application.Current.MainWindow;
             eliteLauncherDialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             if (eliteLauncherDialog.ShowDialog() == true)
             {
+                // Save the user's preferred launcher type
+                string selectedLauncherString = eliteLauncherDialog.SelectedLauncher.ToString();
+                Log.Information("User selected launcher type (edit): {LauncherType}, saving to settings", selectedLauncherString);
+                settings.EliteInstallType = selectedLauncherString;
+                _ = SaveSettingsAsync(settings);
+                
                 string args = eliteLauncherDialog.GetArgumentsString();
 
                 switch (eliteLauncherDialog.SelectedLauncher)
@@ -1331,7 +1486,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                         break;
                 }
 
-                SaveProfilesAsync();
+                await SaveProfilesAsync();
+                UpdateDataGrid(); // Refresh the UI to show changes
             }
         }
 
@@ -1417,11 +1573,23 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 return true;
             }
 
-            // Check if the name explicitly indicates it's Elite Dangerous
-            if (!string.IsNullOrEmpty(app.Name) &&
-                app.Name.StartsWith("Elite Dangerous", StringComparison.OrdinalIgnoreCase))
+            // Check if the name is exactly "Elite Dangerous" or a launcher variant
+            if (!string.IsNullOrEmpty(app.Name))
             {
-                return true;
+                string name = app.Name.Trim();
+                
+                // Exact match for "Elite Dangerous"
+                if (name.Equals("Elite Dangerous", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                
+                // Match launcher variants like "Elite Dangerous (Steam)", "Elite Dangerous (Epic)", etc.
+                if (name.StartsWith("Elite Dangerous (", StringComparison.OrdinalIgnoreCase) &&
+                    name.EndsWith(")", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -1434,13 +1602,20 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             string args;
             const string quote = "\"";
 
-            // For web launches (Steam, Epic, Legendary), just launch the URI
+            // For web launches (Steam, Epic, Legendary), launch the URI and set up monitoring
             if (!string.IsNullOrEmpty(app.WebAppURL))
             {
                 try
                 {
                     Process.Start(new ProcessStartInfo(app.WebAppURL) { UseShellExecute = true });
                     UpdateStatus($"Launching {app.Name} via {app.WebAppURL}");
+
+                    // For Elite Dangerous launches, set up process monitoring
+                    if (IsEliteApp(app))
+                    {
+                        Log.Information("Elite launched via web URL, setting up process monitoring");
+                        MonitorEliteProcessesAsync();
+                    }
 
                     // Only minimize window when using the main Launch button, not individual app launches
                     if (app.Name.Contains("Elite Dangerous") && source != null && source.Equals(Btn_Launch))
@@ -1481,8 +1656,19 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     proc.EnableRaisingEvents = true;
                     processList.Add(proc.ProcessName);
 
-                    if (proc.ProcessName == "EDLaunch")
+                    // For Elite Dangerous, use the new monitoring system
+                    if (IsEliteApp(app))
                     {
+                        lock (_processLock)
+                        {
+                            proc.Exited += EliteProcessExitHandler;
+                            _monitoredEliteProcesses.Add(proc);
+                            Log.Information("Added direct Elite process to monitoring (ID: {ProcessId})", proc.Id);
+                        }
+                    }
+                    else if (proc.ProcessName == "EDLaunch")
+                    {
+                        // Legacy support for old method
                         proc.Exited += new EventHandler(ProcessExitHandler);
                     }
 
@@ -1607,15 +1793,19 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             Settings settings;
             if (File.Exists(settingsFilePath))
             {
+                Log.Information("Loading settings from: {FilePath}", settingsFilePath);
                 string json = await File.ReadAllTextAsync(settingsFilePath);
+                Log.Information("Settings JSON content: {Json}", json);
                 settings = JsonConvert.DeserializeObject<Settings>(json);
+                Log.Information("Deserialized EliteInstallType: {EliteInstallType}", settings.EliteInstallType ?? "null");
             }
             else
             {
+                Log.Information("Settings file does not exist at: {FilePath}, using defaults", settingsFilePath);
                 // If the settings file doesn't exist, use defaults
-                settings = new Settings { Theme = "Default" };
+                settings = new Settings { Theme = "Default", EliteInstallType = "Standard" };
             }
-            Log.Information("Settings loaded: {Settings}", settings);
+            Log.Information("Final settings - EliteInstallType: {EliteInstallType}, Theme: {Theme}", settings.EliteInstallType, settings.Theme);
             return settings;
         }
 
@@ -1853,8 +2043,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string settingsFilePath = Path.Combine(localFolder, "settings.json");
 
-            string json = JsonConvert.SerializeObject(settings);
+            Log.Information("Saving settings - EliteInstallType: {EliteInstallType}, Theme: {Theme}", settings.EliteInstallType, settings.Theme);
+            string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+            Log.Information("Settings JSON to save: {Json}", json);
             await File.WriteAllTextAsync(settingsFilePath, json);
+            Log.Information("Settings saved to: {FilePath}", settingsFilePath);
         }
 
         // Helper method to add Elite Dangerous to current profile from file path

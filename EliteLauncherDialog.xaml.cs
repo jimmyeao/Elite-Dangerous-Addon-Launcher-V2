@@ -46,11 +46,13 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         private bool _isEditing;
         private MyApp _existingApp;
 
-        public EliteLauncherDialog(bool isEditing = false, MyApp existingApp = null)
+        public EliteLauncherDialog(bool isEditing = false, MyApp existingApp = null, string preferredLauncherType = "Standard")
         {
             InitializeComponent();
             _isEditing = isEditing;
             _existingApp = existingApp;
+
+            System.Diagnostics.Debug.WriteLine($"EliteLauncherDialog - preferredLauncherType: '{preferredLauncherType}', isEditing: {isEditing}");
 
             // Set the title based on whether we're adding or editing
             this.Title = isEditing ? "Edit Elite Dangerous" : "Add Elite Dangerous";
@@ -60,8 +62,18 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 ? "How would you like to launch Elite Dangerous?"
                 : "Elite Dangerous was not found in this profile. How would you like to add it?";
 
-            // Initialize with default values
-            SelectedLauncher = LauncherType.Standard;
+            // Initialize with preferred launcher type from settings as default
+            if (Enum.TryParse<LauncherType>(preferredLauncherType, true, out LauncherType preferredType)) // true = ignore case
+            {
+                SelectedLauncher = preferredType;
+                System.Diagnostics.Debug.WriteLine($"EliteLauncherDialog - Successfully parsed '{preferredLauncherType}' to {preferredType}");
+            }
+            else
+            {
+                SelectedLauncher = LauncherType.Standard; // Fallback to Standard
+                System.Diagnostics.Debug.WriteLine($"EliteLauncherDialog - Failed to parse '{preferredLauncherType}', using Standard fallback");
+            }
+            
             UseAutoRun = true;
             UseAutoQuit = true;
             UseVrMode = false;
@@ -69,6 +81,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             // If editing, pre-populate with existing app settings
             if (isEditing && existingApp != null)
             {
+                System.Diagnostics.Debug.WriteLine($"EliteLauncherDialog - Editing existing app: Name='{existingApp.Name}', ExeName='{existingApp.ExeName}', WebAppURL='{existingApp.WebAppURL}', Path='{existingApp.Path}'");
+                
                 // Parse arguments
                 if (!string.IsNullOrEmpty(existingApp.Args))
                 {
@@ -84,26 +98,57 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     VrModeCheckBox.IsChecked = UseVrMode;
                 };
 
-                // Set launcher type
+                // Set launcher type based on CURRENT app configuration (so user can see what it currently is)
+                LauncherType currentType = LauncherType.Standard; // Default fallback
+                string currentTypeDisplay = "Standard";
+                string pathInfo = "";
+                
                 if (!string.IsNullOrEmpty(existingApp.WebAppURL))
                 {
                     if (existingApp.WebAppURL.Contains("steam://"))
-                        SelectedLauncher = LauncherType.Steam;
+                    {
+                        currentType = LauncherType.Steam;
+                        currentTypeDisplay = "Steam Version";
+                        pathInfo = $"\nURL: {existingApp.WebAppURL}";
+                    }
                     else if (existingApp.WebAppURL.Contains("epic"))
-                        SelectedLauncher = LauncherType.Epic;
+                    {
+                        currentType = LauncherType.Epic;
+                        currentTypeDisplay = "Epic Games Launcher";
+                        pathInfo = $"\nURL: {existingApp.WebAppURL}";
+                    }
                     else if (existingApp.WebAppURL.Contains("legendary"))
-                        SelectedLauncher = LauncherType.Legendary;
+                    {
+                        currentType = LauncherType.Legendary;
+                        currentTypeDisplay = "Legendary Launcher";
+                        pathInfo = $"\nURL: {existingApp.WebAppURL}";
+                    }
                 }
                 else if (!string.IsNullOrEmpty(existingApp.ExeName))
                 {
                     if (existingApp.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase))
-                        SelectedLauncher = LauncherType.Standard;
+                    {
+                        currentType = LauncherType.Standard;
+                        currentTypeDisplay = "Standard Installation";
+                        string fullPath = Path.Combine(existingApp.Path, existingApp.ExeName);
+                        pathInfo = $"\nPath: {fullPath}";
+                    }
                     else
                     {
-                        SelectedLauncher = LauncherType.Manual;
-                        ManualPath = Path.Combine(existingApp.Path, existingApp.ExeName);
+                        currentType = LauncherType.Manual;
+                        currentTypeDisplay = $"Manual Path ({existingApp.ExeName})";
+                        string fullPath = Path.Combine(existingApp.Path, existingApp.ExeName);
+                        pathInfo = $"\nPath: {fullPath}";
+                        ManualPath = fullPath;
                     }
                 }
+                
+                // Show current configuration in UI with path information
+                CurrentConfigText.Text = $"Currently configured as: {currentTypeDisplay}{pathInfo}";
+                CurrentConfigText.Visibility = Visibility.Visible;
+                
+                System.Diagnostics.Debug.WriteLine($"EliteLauncherDialog - Current launcher type detected: {currentType}, overriding preferred type: {SelectedLauncher}");
+                SelectedLauncher = currentType; // Show current configuration when editing
             }
 
             this.Loaded += EliteLauncherDialog_Loaded;
