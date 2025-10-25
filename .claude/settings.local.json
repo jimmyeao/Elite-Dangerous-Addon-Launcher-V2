@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(powershell:*)",
+      "Read(//c/Users/jimmy/AppData/Local/Elite_Dangerous_Addon_Lau/**)",
+      "Read(//c/Users/jimmy/AppData/Local/**)",
+      "Bash(cat:*)",
+      "Bash(dotnet run:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

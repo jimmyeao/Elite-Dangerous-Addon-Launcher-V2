@@ -1,20 +1,17 @@
 ﻿<Window x:Class="Elite_Dangerous_Addon_Launcher_V2.EliteLauncherDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-
-        Title="Add Elite Dangerous" 
-        Width="450" 
+        Title="{Binding DialogTitle}"
+        Width="450"
         Height="549"
-         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="12"
         FontFamily="{materialDesign:MaterialDesignFont}"
-
-    TextOptions.TextFormattingMode="Ideal" 
-    TextOptions.TextRenderingMode="Auto"        
->
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto">
 
     <materialDesign:DialogHost Margin="0,0,0,-16">
         <materialDesign:Card Margin="16">
@@ -28,36 +25,32 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock x:Name="MainMessageText" 
-                           Grid.Row="0" 
-                           Text="Elite Dangerous was not found in this profile. How would you like to add it?"
-                           TextWrapping="Wrap" 
+                <TextBlock Grid.Row="0"
+                           Text="{Binding MainMessage}"
+                           TextWrapping="Wrap"
                            Style="{DynamicResource MaterialDesignBody1TextBlock}"
                            Margin="0,0,0,16"/>
-                           
-                <TextBlock x:Name="CurrentConfigText"
-                           Grid.Row="1" 
-                           Visibility="Collapsed"
-                           Text="Current configuration: Steam Version"
-                           TextWrapping="Wrap" 
+
+                <TextBlock Grid.Row="1"
+                           Visibility="{Binding ShowCurrentConfig, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           Text="{Binding CurrentConfigText}"
+                           TextWrapping="Wrap"
                            Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                            Style="{DynamicResource MaterialDesignCaptionTextBlock}"
                            Margin="0,0,0,12"/>
-                           
-                <TextBlock x:Name="SteamWarningText"
-                   Grid.Row="2"
-                   Visibility="Collapsed"
-                   Text="Note: Command-line arguments may not work&#x0a;with alternate launchers. For VR mode,&#x0a;consider using the Standard installation."
-                   TextWrapping="Wrap"
-                   Foreground="Orange"
-                   Style="{DynamicResource MaterialDesignBody1TextBlock}"
-                   Margin="0,0,0,16"/>
 
+                <TextBlock Grid.Row="2"
+                           Visibility="{Binding ShowSteamWarning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           Text="Note: Command-line arguments may not work&#x0a;with alternate launchers. For VR mode,&#x0a;consider using the Standard installation."
+                           TextWrapping="Wrap"
+                           Foreground="Orange"
+                           Style="{DynamicResource MaterialDesignBody1TextBlock}"
+                           Margin="0,0,0,16"/>
 
                 <StackPanel Grid.Row="3" Orientation="Vertical">
                     <Button x:Name="StandardButton"
                             Content="Standard Installation (Scan Computer)"
-                            Click="StandardButton_Click"
+                            Command="{Binding SelectStandardCommand}"
                             Margin="0,4"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
@@ -65,7 +58,7 @@
 
                     <Button x:Name="SteamButton"
                             Content="Steam Version"
-                            Click="SteamButton_Click"
+                            Command="{Binding SelectSteamCommand}"
                             Margin="0,4"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
@@ -73,7 +66,7 @@
 
                     <Button x:Name="EpicButton"
                             Content="Epic Games Launcher"
-                            Click="EpicButton_Click"
+                            Command="{Binding SelectEpicCommand}"
                             Margin="0,4"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
@@ -81,7 +74,7 @@
 
                     <Button x:Name="LegendaryButton"
                             Content="Legendary Launcher"
-                            Click="LegendaryButton_Click"
+                            Command="{Binding SelectLegendaryCommand}"
                             Margin="0,4"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
@@ -89,7 +82,7 @@
 
                     <Button x:Name="BrowseButton"
                             Content="Browse Manually..."
-                            Click="BrowseButton_Click"
+                            Command="{Binding BrowseCommand}"
                             Margin="0,4"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
@@ -97,48 +90,41 @@
                 </StackPanel>
 
                 <!-- Launch Options -->
-                <materialDesign:Card Grid.Row="4" 
+                <materialDesign:Card Grid.Row="4"
                                     Background="{DynamicResource MaterialDesignBackground.Brush.Background}"
                                     Margin="0,16,0,16"
                                     Padding="8">
                     <StackPanel>
-                        <TextBlock Text="Launch Options" 
-                                   FontWeight="Bold" 
-                                     Style="{DynamicResource MaterialDesignBody1TextBlock}"
+                        <TextBlock Text="Launch Options"
+                                   FontWeight="Bold"
+                                   Style="{DynamicResource MaterialDesignBody1TextBlock}"
                                    Margin="8,8,8,16"/>
 
-                        <CheckBox x:Name="AutoRunCheckBox" 
-                                  Content="Auto Run (automatically launch the game)" 
-                                
-                                  IsChecked="True" 
+                        <CheckBox Content="Auto Run (automatically launch the game)"
+                                  IsChecked="{Binding UseAutoRun, Mode=TwoWay}"
                                   Margin="8,4"/>
 
-                        <CheckBox x:Name="AutoQuitCheckBox" 
-                                  Content="Auto Quit (close launcher when game exits)" 
-                                 
-                                  IsChecked="True" 
+                        <CheckBox Content="Auto Quit (close launcher when game exits)"
+                                  IsChecked="{Binding UseAutoQuit, Mode=TwoWay}"
                                   Margin="8,4"/>
 
-                        <CheckBox x:Name="VrModeCheckBox" 
-                                  Content="VR Mode" 
-                                  IsChecked="False" 
+                        <CheckBox Content="VR Mode"
+                                  IsChecked="{Binding UseVrMode, Mode=TwoWay}"
                                   Margin="8,4"/>
                     </StackPanel>
                 </materialDesign:Card>
 
-                <StackPanel Grid.Row="5" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Right" 
+                <StackPanel Grid.Row="5"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Bottom">
-                    <Button x:Name="CancelButton"
-                            Content="Cancel" 
+                    <Button Content="Cancel"
                             Click="CancelButton_Click"
                             Style="{StaticResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
                             Margin="8,0,0,0"/>
 
-                    <Button x:Name="OkButton"
-                            Content="OK" 
+                    <Button Content="OK"
                             Click="OkButton_Click"
                             Style="{StaticResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="5"
