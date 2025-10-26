@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Elite_Dangerous_Addon_Launcher_V2.Services
 {
     /// <summary>
-    /// Service for managing profiles with migration support
+    /// Service for managing profiles
     /// </summary>
     public class ProfileService : IProfileService
     {
@@ -19,50 +19,16 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
             Constants.EnsureAppDataFolderExists();
 
             Log.Information("ProfileService.LoadProfilesAsync() called");
-            Log.Information("New profiles path: {NewPath}", Constants.ProfilesPath);
-            Log.Information("Legacy profiles path: {LegacyPath}", Constants.LegacyProfilesPath);
-            Log.Information("New path exists: {NewExists}", File.Exists(Constants.ProfilesPath));
-            Log.Information("Legacy path exists: {LegacyExists}", File.Exists(Constants.LegacyProfilesPath));
+            Log.Information("Profiles path: {Path}", Constants.ProfilesPath);
 
-            // First, try to load from the new location
             if (File.Exists(Constants.ProfilesPath))
             {
-                Log.Information("Loading profiles from new location: {FilePath}", Constants.ProfilesPath);
+                Log.Information("Loading profiles from: {FilePath}", Constants.ProfilesPath);
                 return await LoadFromPathAsync(Constants.ProfilesPath);
             }
 
-            // Fall back to legacy location
-            if (File.Exists(Constants.LegacyProfilesPath))
-            {
-                Log.Information("Found profiles in legacy location: {LegacyPath}", Constants.LegacyProfilesPath);
-                Log.Information("Migrating profiles to: {NewPath}", Constants.ProfilesPath);
-
-                var profiles = await LoadFromPathAsync(Constants.LegacyProfilesPath);
-
-                Log.Information("Loaded {Count} profiles from legacy location", profiles.Count);
-
-                // Save to new location
-                await SaveProfilesAsync(profiles);
-
-                Log.Information("Saved profiles to new location");
-
-                // Delete old file after successful migration
-                try
-                {
-                    File.Delete(Constants.LegacyProfilesPath);
-                    Log.Information("Successfully migrated and deleted legacy profiles file");
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Failed to delete legacy profiles file at {Path}", Constants.LegacyProfilesPath);
-                }
-
-                return profiles;
-            }
-
             // No profiles file found, return empty collection
-            Log.Warning("Profiles file does not exist in either location, returning empty collection");
-            Log.Warning("Checked paths: New={NewPath}, Legacy={LegacyPath}", Constants.ProfilesPath, Constants.LegacyProfilesPath);
+            Log.Warning("Profiles file does not exist at {Path}", Constants.ProfilesPath);
             return new ObservableCollection<Profile>();
         }
 

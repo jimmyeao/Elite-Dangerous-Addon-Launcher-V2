@@ -155,6 +155,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             set => SetProperty(ref _applicationVersion, value);
         }
 
+        public string CurrentTheme
+        {
+            get => _settings?.Theme ?? "Light";
+        }
+
         #endregion
 
         #region Commands
@@ -191,6 +196,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                 // Load profiles
                 var profiles = await _profileService.LoadProfilesAsync();
                 AppState.Instance.Profiles = profiles;
+                OnPropertyChanged(nameof(Profiles)); // Notify UI that Profiles property has changed
 
                 // Set current profile
                 var profileName = App.ProfileName; // Get from command line args
@@ -335,6 +341,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             _settings.Theme = _settings.Theme == "Dark" ? "Light" : "Dark";
             await _settingsService.SaveSettingsAsync(_settings);
 
+            OnPropertyChanged(nameof(CurrentTheme));
             Log.Information("Theme toggled to: {Theme}", _settings.Theme);
             // Theme application will be handled by the View
         }

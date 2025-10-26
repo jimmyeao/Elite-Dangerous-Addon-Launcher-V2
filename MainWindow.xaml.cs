@@ -76,18 +76,20 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // ViewModel initialization happens in its constructor
-            // Apply theme based on settings
-            ApplyTheme(_viewModel.IsLoading ? "Light" : (isDarkTheme ? "Dark" : "Light"));
+            // Wait for ViewModel to finish loading settings
+            while (_viewModel.IsLoading)
+            {
+                await Task.Delay(50);
+            }
+
+            // Apply theme based on loaded settings
+            ApplyTheme(_viewModel.CurrentTheme);
 
             // Show what's new if version changed
             ShowWhatsNewIfUpdated();
 
-            // Check if we need to prompt for profile creation
-            if (AppState.Instance.Profiles == null || AppState.Instance.Profiles.Count == 0)
-            {
-                await ShowAddProfileDialog();
-            }
+            // Note: Profile creation prompt is handled by ViewModel.InitializeAsync()
+            // Don't check here to avoid race condition
         }
 
         protected override void OnClosed(EventArgs e)
@@ -170,6 +172,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     {
                         this.WindowState = WindowState.Minimized;
                     }
+                    break;
+
+                case nameof(MainWindowViewModel.CurrentTheme):
+                    // Theme changed, apply it
+                    ApplyTheme(_viewModel.CurrentTheme);
                     break;
             }
         }
@@ -452,11 +459,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private async void ToggleThemeButton_Click(object sender, RoutedEventArgs e)
         {
-            isDarkTheme = !isDarkTheme;
-            ApplyTheme(isDarkTheme ? "Dark" : "Light");
-
-            // Save theme preference
+            // Toggle theme in ViewModel (which will save and notify)
             await _viewModel.ToggleThemeAsync();
+            // Theme will be applied automatically via PropertyChanged event
         }
 
         private void ApplyTheme(string theme)

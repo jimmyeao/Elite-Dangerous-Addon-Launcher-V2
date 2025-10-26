@@ -21,26 +21,12 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             ApplicationName);
 
         /// <summary>
-        /// Legacy location for profiles.json (root of LocalAppData)
-        /// </summary>
-        public static readonly string LegacyProfilesPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "profiles.json");
-
-        /// <summary>
-        /// Legacy location for settings.json (root of LocalAppData)
-        /// </summary>
-        public static readonly string LegacySettingsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "settings.json");
-
-        /// <summary>
-        /// New location for profiles.json
+        /// Location for profiles.json
         /// </summary>
         public static readonly string ProfilesPath = Path.Combine(AppDataFolder, "profiles.json");
 
         /// <summary>
-        /// New location for settings.json
+        /// Location for settings.json
         /// </summary>
         public static readonly string SettingsPath = Path.Combine(AppDataFolder, "settings.json");
 
