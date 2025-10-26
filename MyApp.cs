@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
 namespace Elite_Dangerous_Addon_Launcher_V2
 {
@@ -161,6 +162,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
         }
 
+        [JsonIgnore]
         public bool IsRunning
         {
             get { return _isRunning; }

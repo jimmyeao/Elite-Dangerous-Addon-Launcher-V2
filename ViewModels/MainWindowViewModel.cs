@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
 {
@@ -17,6 +18,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
         private readonly IProfileService _profileService;
         private readonly ISettingsService _settingsService;
         private readonly IProcessLaunchService _processLaunchService;
+        private readonly DispatcherTimer _statusUpdateTimer;
 
         private Profile _currentProfile;
         private MyApp _selectedApp;
@@ -62,6 +64,14 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             ApplicationVersion = $"{version.Major}.{version.Minor}.{version.Build}";
 
+            // Set up timer to periodically update running status (every 3 seconds)
+            _statusUpdateTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            _statusUpdateTimer.Tick += (s, e) => UpdateRunningStatus();
+            _statusUpdateTimer.Start();
+
             // Initialize
             _ = InitializeAsync();
         }
@@ -83,6 +93,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                     ((IRelayCommand)LaunchAllCommand).RaiseCanExecuteChanged();
                     ((IRelayCommand)DeleteProfileCommand).RaiseCanExecuteChanged();
                     ((IRelayCommand)RenameProfileCommand).RaiseCanExecuteChanged();
+
+                    // Update running status for apps in the new profile
+                    UpdateRunningStatus();
                 }
             }
         }
@@ -433,8 +446,88 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             await _profileService.SaveProfilesAsync(Profiles);
         }
 
+        private void UpdateRunningStatus()
+        {
+            if (CurrentProfile == null || CurrentProfile.Apps == null)
+                return;
+
+            // Get list of currently running process names
+            var runningProcesses = System.Diagnostics.Process.GetProcesses()
+                .Select(p =>
+                {
+                    try { return p.ProcessName; }
+                    catch { return null; }
+                })
+                .Where(n => n != null)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // Check if Elite Dangerous is running
+            bool eliteIsRunning = runningProcesses.Contains("EDLaunch") ||
+                                  runningProcesses.Contains("EliteDangerous64");
+
+            // Update IsRunning for each app based on whether its process is running
+            foreach (var app in CurrentProfile.Apps)
+            {
+                // Special handling for Elite Dangerous apps
+                if (IsEliteApp(app))
+                {
+                    app.IsRunning = eliteIsRunning;
+                }
+                else if (!string.IsNullOrEmpty(app.ExeName))
+                {
+                    // Remove .exe extension if present for comparison
+                    var processName = app.ExeName.Replace(".exe", "", StringComparison.OrdinalIgnoreCase);
+                    app.IsRunning = runningProcesses.Contains(processName);
+                }
+                // Don't change IsRunning if ExeName is empty - leave it as is
+            }
+        }
+
+        private bool IsEliteApp(MyApp app)
+        {
+            if (app == null)
+                return false;
+
+            // Check if it's a local Elite exe
+            if (!string.IsNullOrEmpty(app.ExeName) &&
+                (app.ExeName.Equals("edlaunch.exe", StringComparison.OrdinalIgnoreCase) ||
+                 app.ExeName.Equals("EliteDangerous64.exe", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            // Check if it's a web launcher for Elite
+            if (!string.IsNullOrEmpty(app.WebAppURL) &&
+                (app.WebAppURL.Contains("rungameid/359320") ||
+                 app.WebAppURL.Contains("com.epicgames.launcher://apps") ||
+                 app.WebAppURL.Contains("legendary://launch")))
+            {
+                return true;
+            }
+
+            // Check if the name is exactly "Elite Dangerous" or a launcher variant
+            if (!string.IsNullOrEmpty(app.Name))
+            {
+                string name = app.Name.Trim();
+
+                if (name.Equals("Elite Dangerous", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (name.StartsWith("Elite Dangerous (", StringComparison.OrdinalIgnoreCase) &&
+                    name.EndsWith(")", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void Cleanup()
         {
+            _statusUpdateTimer?.Stop();
             _processLaunchService.StopMonitoringEliteProcesses();
             _processLaunchService.AllEliteProcessesExited -= OnAllEliteProcessesExited;
             _processLaunchService.LaunchProgress -= OnLaunchProgress;

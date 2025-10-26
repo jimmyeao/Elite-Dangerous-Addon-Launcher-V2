@@ -48,6 +48,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
@@ -112,12 +113,6 @@
                           Margin="0,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>
-
-            <!-- Status Message -->
-            <TextBlock Text="{Binding StatusMessage}"
-                       Margin="10,5,0,0"
-                       FontStyle="Italic"
-                       Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -146,11 +141,29 @@
           ScrollViewer.VerticalScrollBarVisibility="Auto"
           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="300" MaxWidth="500" />
+                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="Auto" MaxWidth="300" />
+                    <DataGridTemplateColumn Header="Status" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="#BDBDBD"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                    <Setter Property="Fill" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Enabled" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                                <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Margin="10,0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -159,21 +172,22 @@
                             <DataTemplate>
                                 <Button Content="Launch"
                                         Command="{Binding DataContext.LaunchSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}" />
+                                        CommandParameter="{Binding}"
+                                        Margin="5,2" Padding="10,5" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Edit" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Edit" Click="Btn_Edit_Click" CommandParameter="{Binding}" />
+                                <Button Content="Edit" Click="Btn_Edit_Click" CommandParameter="{Binding}" Margin="5,2" Padding="10,5" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Delete" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="Delete" Click="DeleteButton_Click" CommandParameter="{Binding}" />
+                                <Button Content="Delete" Click="DeleteButton_Click" CommandParameter="{Binding}" Margin="5,2" Padding="10,5" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -186,5 +200,14 @@
                Height="128"
                VerticalAlignment="Top" />
         </Grid>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" Background="{DynamicResource MaterialDesign.Brush.Background}">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontStyle="Italic"
+                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

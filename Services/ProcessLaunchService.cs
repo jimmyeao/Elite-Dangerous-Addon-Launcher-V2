@@ -17,6 +17,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
         private readonly HashSet<Process> _monitoredEliteProcesses = new HashSet<Process>();
         private readonly object _processLock = new object();
         private readonly List<string> _launchedProcesses = new List<string>();
+        private readonly Dictionary<Process, MyApp> _appProcessMap = new Dictionary<Process, MyApp>();
 
         public event EventHandler AllEliteProcessesExited;
         public event EventHandler<string> LaunchProgress;
@@ -231,6 +232,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                 Process.Start(new ProcessStartInfo(app.WebAppURL) { UseShellExecute = true });
                 Log.Information("Launched {AppName} via {WebAppURL}", app.Name, app.WebAppURL);
 
+                // Set running status
+                app.IsRunning = true;
+
                 // For Elite Dangerous launches, set up process monitoring
                 if (IsEliteApp(app))
                 {
@@ -271,6 +275,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                 proc.EnableRaisingEvents = true;
                 _launchedProcesses.Add(proc.ProcessName);
 
+                // Set running status
+                app.IsRunning = true;
+
                 // For Elite Dangerous, use monitoring system
                 if (IsEliteApp(app))
                 {
@@ -279,6 +286,16 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                         proc.Exited += EliteProcessExitHandler;
                         _monitoredEliteProcesses.Add(proc);
                         Log.Information("Added direct Elite process to monitoring (ID: {ProcessId})", proc.Id);
+                    }
+                }
+                else
+                {
+                    // For non-Elite apps, track the process and monitor for exit
+                    lock (_processLock)
+                    {
+                        _appProcessMap[proc] = app;
+                        proc.Exited += AppProcessExitHandler;
+                        Log.Information("Monitoring process for {AppName} (ID: {ProcessId})", app.Name, proc.Id);
                     }
                 }
 
@@ -379,6 +396,65 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                     {
                         Log.Information("All Elite processes have exited, triggering event");
                         AllEliteProcessesExited?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+
+        private void AppProcessExitHandler(object sender, EventArgs e)
+        {
+            var exitedProcess = sender as Process;
+            if (exitedProcess != null)
+            {
+                MyApp app = null;
+                string processName = "Unknown";
+                int processId = -1;
+
+                try
+                {
+                    processName = exitedProcess.ProcessName;
+                    processId = exitedProcess.Id;
+                }
+                catch (InvalidOperationException)
+                {
+                    processName = "Unknown Process";
+                    processId = -1;
+                }
+
+                lock (_processLock)
+                {
+                    if (_appProcessMap.TryGetValue(exitedProcess, out app))
+                    {
+                        _appProcessMap.Remove(exitedProcess);
+                        Log.Information("App process exited: {AppName} / {ProcessName} (ID: {ProcessId})", app.Name, processName, processId);
+
+                        // Update IsRunning on UI thread for ALL matching apps across ALL profiles
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            // Update all apps across all profiles that match this process
+                            var profiles = AppState.Instance.Profiles;
+                            if (profiles != null)
+                            {
+                                foreach (var profile in profiles)
+                                {
+                                    if (profile.Apps != null)
+                                    {
+                                        foreach (var profileApp in profile.Apps)
+                                        {
+                                            if (!string.IsNullOrEmpty(profileApp.ExeName))
+                                            {
+                                                var appProcessName = profileApp.ExeName.Replace(".exe", "", StringComparison.OrdinalIgnoreCase);
+                                                if (appProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    profileApp.IsRunning = false;
+                                                    Log.Information("Updated IsRunning=false for {AppName} in profile {ProfileName}", profileApp.Name, profile.Name);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
