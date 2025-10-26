@@ -1,4 +1,5 @@
 using Elite_Dangerous_Addon_Launcher_V2.Commands;
+using Elite_Dangerous_Addon_Launcher_V2.Views;
 using Serilog;
 using System;
 using System.Windows.Input;

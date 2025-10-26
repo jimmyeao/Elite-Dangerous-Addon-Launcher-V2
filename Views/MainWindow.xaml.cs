@@ -18,7 +18,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Elite_Dangerous_Addon_Launcher_V2
+namespace Elite_Dangerous_Addon_Launcher_V2.Views
 {
     /// <summary>
     /// Refactored MainWindow following MVVM pattern
@@ -44,14 +44,13 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
 
             // Set minimum dimensions
-            this.MinWidth = 850;
+            this.MinWidth = 741;
             this.MinHeight = 300;
 
-            // Apply saved window size
+            // Apply saved window width (height is auto-sized to content)
             var storedWidth = Properties.Settings.Default.MainWindowSize.Width;
-            var storedHeight = Properties.Settings.Default.MainWindowSize.Height;
-            this.Width = (storedWidth >= this.MinWidth) ? storedWidth : 850;
-            this.Height = (storedHeight >= this.MinHeight) ? storedHeight : 450;
+            this.Width = (storedWidth >= this.MinWidth) ? storedWidth : 741;
+            // Height is controlled by SizeToContent="Height" in XAML
 
             // Initialize services
             var profileService = new ProfileService();
@@ -111,7 +110,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             base.OnClosed(e);
 
-            // Save window size and position
+            // Save window size and position (height is auto-calculated but saved for compatibility)
             Properties.Settings.Default.MainWindowSize = new System.Drawing.Size((int)this.Width, (int)this.Height);
             Properties.Settings.Default.MainWindowLocation = new System.Drawing.Point((int)this.Left, (int)this.Top);
             Properties.Settings.Default.Save();
@@ -273,11 +272,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         {
             if (sender is Button button && button.DataContext is MyApp appToDelete)
             {
-                var result = MessageBox.Show(
+                var result = CustomDialog.Show(
                     $"Are you sure you want to delete {appToDelete.Name}?",
                     "Confirm Delete",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    this);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -326,11 +325,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             if (_viewModel.CurrentProfile == null)
                 return;
 
-            var result = MessageBox.Show(
+            var result = CustomDialog.Show(
                 $"Are you sure you want to delete the profile '{_viewModel.CurrentProfile.Name}'?",
                 "Confirm Delete",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                this);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -403,7 +402,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             {
                 string json = JsonConvert.SerializeObject(AppState.Instance.Profiles);
                 File.WriteAllText(saveFileDialog.FileName, json);
-                MessageBox.Show("Profiles exported successfully!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomDialog.Show("Profiles exported successfully!", "Export Complete", MessageBoxButton.OK, this);
             }
         }
 
@@ -420,11 +419,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 string json = File.ReadAllText(openFileDialog.FileName);
                 var importedProfiles = JsonConvert.DeserializeObject<List<Profile>>(json);
 
-                var result = MessageBox.Show(
+                var result = CustomDialog.Show(
                     "This will remove all current profiles. Are you sure?",
                     "Confirm Import",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                    this);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -438,7 +437,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     _viewModel.CurrentProfile = AppState.Instance.Profiles.FirstOrDefault();
                     await _viewModel.SaveProfilesAsync();
 
-                    MessageBox.Show("Profiles imported successfully!", "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    CustomDialog.Show("Profiles imported successfully!", "Import Complete", MessageBoxButton.OK, this);
                 }
             }
         }
@@ -460,12 +459,12 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 catch (Exception ex)
                 {
                     Log.Error(ex, "Failed to open log file");
-                    MessageBox.Show($"Failed to open log file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    CustomDialog.Show($"Failed to open log file: {ex.Message}", "Error", MessageBoxButton.OK, this);
                 }
             }
             else
             {
-                MessageBox.Show("Log file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                CustomDialog.Show("Log file not found.", "Error", MessageBoxButton.OK, this);
             }
         }
 
@@ -627,7 +626,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             }
             else
             {
-                MessageBox.Show("Failed to add Elite Dangerous. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomDialog.Show("Failed to add Elite Dangerous. Please try again.", "Error", MessageBoxButton.OK, this);
             }
         }
 
@@ -827,7 +826,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 targetProfile.Apps.Add(copiedApp);
                 _ = _viewModel.SaveProfilesAsync();
 
-                MessageBox.Show($"App copied to profile '{targetProfile.Name}'", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                CustomDialog.Show($"App copied to profile '{targetProfile.Name}'", "Success", MessageBoxButton.OK, this);
             }
         }
 

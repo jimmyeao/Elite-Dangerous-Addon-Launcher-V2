@@ -1,7 +1,7 @@
 using Elite_Dangerous_Addon_Launcher_V2.ViewModels;
 using System.Windows;
 
-namespace Elite_Dangerous_Addon_Launcher_V2
+namespace Elite_Dangerous_Addon_Launcher_V2.Views
 {
     /// <summary>
     /// Refactored EliteLauncherDialog following MVVM pattern

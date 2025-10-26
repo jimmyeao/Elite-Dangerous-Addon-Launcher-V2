@@ -23,6 +23,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
         private string _statusMessage;
         private bool _isLaunchButtonEnabled = true;
         private bool _closeAllAppsOnExit;
+        private bool _alsoCloseThisApp;
         private Settings _settings;
         private bool _isLoading;
         private string _applicationVersion;
@@ -137,6 +138,22 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             }
         }
 
+        public bool AlsoCloseThisApp
+        {
+            get => _alsoCloseThisApp;
+            set
+            {
+                if (SetProperty(ref _alsoCloseThisApp, value))
+                {
+                    if (_settings != null)
+                    {
+                        _settings.AlsoCloseThisApp = value;
+                        _ = _settingsService.SaveSettingsAsync(_settings);
+                    }
+                }
+            }
+        }
+
         public bool IsLoading
         {
             get => _isLoading;
@@ -192,6 +209,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                 // Load settings
                 _settings = await _settingsService.LoadSettingsAsync();
                 CloseAllAppsOnExit = _settings.CloseAllAppsOnExit;
+                AlsoCloseThisApp = _settings.AlsoCloseThisApp;
 
                 // Load profiles
                 var profiles = await _profileService.LoadProfilesAsync();
@@ -358,6 +376,21 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                 {
                     _processLaunchService.CloseAllLaunchedApps();
                     StatusMessage = "Elite closed. All companion apps closed.";
+
+                    if (AlsoCloseThisApp)
+                    {
+                        Log.Information("AlsoCloseThisApp is enabled, closing application...");
+                        StatusMessage = "Elite closed. All companion apps closed. Closing launcher...";
+
+                        // Give a brief moment for the status message to display
+                        Task.Delay(1000).ContinueWith(_ =>
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                Application.Current.Shutdown();
+                            });
+                        });
+                    }
                 }
                 else
                 {

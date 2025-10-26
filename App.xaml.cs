@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Elite_Dangerous_Addon_Launcher_V2.Views;
 
 namespace Elite_Dangerous_Addon_Launcher_V2
 {

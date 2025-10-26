@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 
-namespace Elite_Dangerous_Addon_Launcher_V2
+namespace Elite_Dangerous_Addon_Launcher_V2.Views
 {
     /// <summary>
     /// Interaction logic for AddApp.xaml
