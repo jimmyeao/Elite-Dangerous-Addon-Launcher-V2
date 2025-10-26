@@ -135,7 +135,7 @@
           ScrollViewer.VerticalScrollBarVisibility="Auto"
           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="*" />
+                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="300" MaxWidth="500" />
                     <DataGridTemplateColumn Header="Enabled" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

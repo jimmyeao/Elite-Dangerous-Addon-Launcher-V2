@@ -8,7 +8,12 @@
       "Bash(cat:*)",
       "Bash(dotnet run:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(timeout 10 dotnet run:*)",
+      "Bash(git diff:*)",
+      "Bash(dotnet build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

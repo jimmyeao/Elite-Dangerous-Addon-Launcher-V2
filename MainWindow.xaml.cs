@@ -85,6 +85,18 @@ namespace Elite_Dangerous_Addon_Launcher_V2
             // Apply theme based on loaded settings
             ApplyTheme(_viewModel.CurrentTheme);
 
+            // Apply saved column width
+            if (AddonDataGrid.Columns.Count > 0 && Properties.Settings.Default.AppNameColumnWidth > 0)
+            {
+                var appNameColumn = AddonDataGrid.Columns[0];
+                // Ensure width is reasonable (between 200 and 500)
+                double savedWidth = Properties.Settings.Default.AppNameColumnWidth;
+                if (savedWidth >= 200 && savedWidth <= 500)
+                {
+                    appNameColumn.Width = new DataGridLength(savedWidth);
+                }
+            }
+
             // Show what's new if version changed
             ShowWhatsNewIfUpdated();
 
@@ -138,13 +150,17 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // Save column width if changed
+            // Save column width if changed (constrained between 200 and 500)
             if (AddonDataGrid.Columns.Count > 0)
             {
                 var appNameColumn = AddonDataGrid.Columns[0];
-                if (appNameColumn.ActualWidth != Properties.Settings.Default.AppNameColumnWidth)
+                double actualWidth = appNameColumn.ActualWidth;
+
+                // Only save if width is reasonable and different from saved value
+                if (actualWidth >= 200 && actualWidth <= 500 &&
+                    Math.Abs(actualWidth - Properties.Settings.Default.AppNameColumnWidth) > 1)
                 {
-                    Properties.Settings.Default.AppNameColumnWidth = appNameColumn.ActualWidth;
+                    Properties.Settings.Default.AppNameColumnWidth = actualWidth;
                     Properties.Settings.Default.Save();
                 }
             }
@@ -570,7 +586,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     eliteApp = new MyApp
                     {
                         Name = "Elite Dangerous (Epic)",
-                        WebAppURL = "epic://launch",
+                        WebAppURL = "com.epicgames.launcher://apps/9C203B6ED35846E8A4A9FF1E45A45B19%3A0a2d9f6403244d12969e11da6713137b%3A9C203B6ED35846E8A4A9FF1E45A45B19?action=launch&silent=true",
                         Args = arguments,
                         IsEnabled = true,
                         Order = 0
@@ -639,7 +655,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                     break;
 
                 case EliteLauncherDialog.LauncherType.Epic:
-                    existingApp.WebAppURL = "epic://launch";
+                    existingApp.WebAppURL = "com.epicgames.launcher://apps/9C203B6ED35846E8A4A9FF1E45A45B19%3A0a2d9f6403244d12969e11da6713137b%3A9C203B6ED35846E8A4A9FF1E45A45B19?action=launch&silent=true";
                     existingApp.ExeName = null;
                     existingApp.Path = null;
                     break;
@@ -698,7 +714,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
             if (!string.IsNullOrEmpty(app.WebAppURL) &&
                 (app.WebAppURL.Contains("rungameid/359320") ||
-                 app.WebAppURL.Contains("epic://launch") ||
+                 app.WebAppURL.Contains("com.epicgames.launcher://apps") ||
                  app.WebAppURL.Contains("legendary://launch")))
             {
                 return true;

@@ -290,7 +290,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
             // Check if it's a web launcher for Elite
             if (!string.IsNullOrEmpty(app.WebAppURL) &&
                 (app.WebAppURL.Contains("rungameid/359320") ||
-                 app.WebAppURL.Contains("epic://launch") ||
+                 app.WebAppURL.Contains("com.epicgames.launcher://apps") ||
                  app.WebAppURL.Contains("legendary://launch")))
             {
                 return true;
