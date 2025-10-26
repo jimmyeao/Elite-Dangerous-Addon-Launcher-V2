@@ -106,6 +106,9 @@
                     <CheckBox x:Name="AlsoCloseThisAppCheckbox" Content="Also close this App"
                           IsChecked="{Binding AlsoCloseThisApp, Mode=TwoWay}"
                           IsEnabled="{Binding CloseAllAppsOnExit}"
+                          Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <CheckBox x:Name="MinimizeToTrayCheckbox" Content="Minimize to System Tray"
+                          IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
                           Margin="0,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </StackPanel>

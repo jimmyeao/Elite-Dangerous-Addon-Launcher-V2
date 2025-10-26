@@ -24,6 +24,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
         private bool _isLaunchButtonEnabled = true;
         private bool _closeAllAppsOnExit;
         private bool _alsoCloseThisApp;
+        private bool _minimizeToTray;
         private Settings _settings;
         private bool _isLoading;
         private string _applicationVersion;
@@ -154,6 +155,22 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             }
         }
 
+        public bool MinimizeToTray
+        {
+            get => _minimizeToTray;
+            set
+            {
+                if (SetProperty(ref _minimizeToTray, value))
+                {
+                    if (_settings != null)
+                    {
+                        _settings.MinimizeToTray = value;
+                        _ = _settingsService.SaveSettingsAsync(_settings);
+                    }
+                }
+            }
+        }
+
         public bool IsLoading
         {
             get => _isLoading;
@@ -210,6 +227,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                 _settings = await _settingsService.LoadSettingsAsync();
                 CloseAllAppsOnExit = _settings.CloseAllAppsOnExit;
                 AlsoCloseThisApp = _settings.AlsoCloseThisApp;
+                MinimizeToTray = _settings.MinimizeToTray;
 
                 // Load profiles
                 var profiles = await _profileService.LoadProfilesAsync();
@@ -247,7 +265,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             }
         }
 
-        private async Task LaunchAllAppsAsync()
+        public async Task LaunchAllAppsAsync()
         {
             if (CurrentProfile == null || !CurrentProfile.Apps.Any(a => a.IsEnabled))
                 return;

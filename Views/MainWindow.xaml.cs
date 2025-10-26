@@ -28,6 +28,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
     public partial class MainWindow : Window, IDropTarget
     {
         private readonly MainWindowViewModel _viewModel;
+        private SystemTrayManager _trayManager;
         private bool isDarkTheme = false;
 
         public MainWindow(string profileName = null)
@@ -63,12 +64,16 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
             // Set DataContext
             this.DataContext = _viewModel;
 
+            // Initialize System Tray
+            _trayManager = new SystemTrayManager(_viewModel, this);
+
             // Subscribe to ViewModel events for view-specific actions
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             // Assign window event handlers
             this.Loaded += MainWindow_Loaded;
             this.SizeChanged += MainWindow_SizeChanged;
+            this.StateChanged += MainWindow_StateChanged;
         }
 
         #region Window Lifecycle Events
@@ -107,6 +112,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
         {
             // Cleanup ViewModel
             _viewModel?.Cleanup();
+
+            // Cleanup System Tray
+            _trayManager?.Dispose();
 
             base.OnClosed(e);
 
@@ -162,6 +170,15 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
                     Properties.Settings.Default.AppNameColumnWidth = actualWidth;
                     Properties.Settings.Default.Save();
                 }
+            }
+        }
+
+        private void MainWindow_StateChanged(object sender, EventArgs e)
+        {
+            // Handle minimize to tray if enabled
+            if (this.WindowState == WindowState.Minimized && _viewModel.MinimizeToTray)
+            {
+                _trayManager?.MinimizeWindow();
             }
         }
 
