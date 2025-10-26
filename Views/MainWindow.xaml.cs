@@ -225,6 +225,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
             var addAppDialog = new AddApp
             {
                 SelectedProfile = _viewModel.CurrentProfile,
+                MainPageReference = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this
             };
@@ -262,6 +263,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
             {
                 SelectedProfile = _viewModel.CurrentProfile,
                 AppToEdit = appToEdit,
+                MainPageReference = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this
             };

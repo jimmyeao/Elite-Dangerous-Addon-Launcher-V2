@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Win32;
 
 namespace Elite_Dangerous_Addon_Launcher_V2.Views
@@ -53,7 +54,18 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
                 Tb_AppExeName.Text = AppToEdit.ExeName;
                 Tb_WebApURL.Text = AppToEdit.WebAppURL;
                 Cb_Enable.IsChecked = AppToEdit.IsEnabled;
+                Tb_LaunchDelay.Text = AppToEdit.LaunchDelay.ToString();
             }
+            else
+            {
+                Tb_LaunchDelay.Text = "0";
+            }
+        }
+
+        private void Tb_LaunchDelay_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Only allow numeric input
+            e.Handled = !int.TryParse(e.Text, out _);
         }
 
         private void Bt_BrowsePath_Click(object sender, RoutedEventArgs e)
@@ -126,6 +138,13 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
             var webAppURL = Tb_WebApURL.Text;
             var isEnabled = Cb_Enable.IsChecked;
 
+            // Parse launch delay (default to 0 if invalid)
+            int launchDelay = 0;
+            if (!string.IsNullOrWhiteSpace(Tb_LaunchDelay.Text))
+            {
+                int.TryParse(Tb_LaunchDelay.Text, out launchDelay);
+            }
+
             if (AppToEdit != null)
             {
                 AppToEdit.Name = appName;
@@ -135,6 +154,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
                 AppToEdit.ExeName = exeName;
                 AppToEdit.WebAppURL = webAppURL;
                 AppToEdit.IsEnabled = isEnabled.HasValue ? isEnabled.Value : false;
+                AppToEdit.LaunchDelay = launchDelay;
             }
             else
             {
@@ -146,6 +166,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
                     InstallationURL = installationURL,
                     ExeName = exeName,
                     WebAppURL = webAppURL,
+                    LaunchDelay = launchDelay,
                     IsEnabled = isEnabled.HasValue ? isEnabled.Value : false,
                 };
 

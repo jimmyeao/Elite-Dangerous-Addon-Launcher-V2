@@ -55,6 +55,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             // Subscribe to Elite process exit event
             _processLaunchService.AllEliteProcessesExited += OnAllEliteProcessesExited;
 
+            // Subscribe to launch progress updates
+            _processLaunchService.LaunchProgress += OnLaunchProgress;
+
             // Set application version
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             ApplicationVersion = $"{version.Major}.{version.Minor}.{version.Build}";
@@ -382,6 +385,14 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             // Theme application will be handled by the View
         }
 
+        private void OnLaunchProgress(object sender, string message)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = message;
+            });
+        }
+
         private void OnAllEliteProcessesExited(object sender, EventArgs e)
         {
             Log.Information("All Elite processes have exited");
@@ -426,6 +437,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
         {
             _processLaunchService.StopMonitoringEliteProcesses();
             _processLaunchService.AllEliteProcessesExited -= OnAllEliteProcessesExited;
+            _processLaunchService.LaunchProgress -= OnLaunchProgress;
         }
 
         #endregion

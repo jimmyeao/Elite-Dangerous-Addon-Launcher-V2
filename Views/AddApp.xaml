@@ -61,6 +61,12 @@
 
             <CheckBox x:Name="Cb_Enable" Grid.Row="6" Grid.Column="0" Content="Enable?" Margin="10,10,0,0" HorizontalAlignment="Left" Width="103"/>
 
+            <Label Grid.Row="6" Grid.Column="1" Content="Launch Delay (seconds)" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <TextBox x:Name="Tb_LaunchDelay" Grid.Row="6" Grid.Column="2" Width="80" Margin="10,0,10,0"
+                     VerticalAlignment="Center" HorizontalAlignment="Left"
+                     materialDesign:HintAssist.Hint="0"
+                     PreviewTextInput="Tb_LaunchDelay_PreviewTextInput"/>
+
             <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="button1" Content="Save.." Click="addApp" Margin="0,0,0,5"/>
                 <Button x:Name="button2" Content="Cancel" Margin="10,0,0,5" Click="cancelButton"/>

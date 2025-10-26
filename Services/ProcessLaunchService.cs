@@ -19,6 +19,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
         private readonly List<string> _launchedProcesses = new List<string>();
 
         public event EventHandler AllEliteProcessesExited;
+        public event EventHandler<string> LaunchProgress;
 
         public List<string> LaunchedProcesses => _launchedProcesses;
 
@@ -47,13 +48,44 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
             if (apps == null)
                 return;
 
-            foreach (var app in apps.Where(a => a.IsEnabled))
+            var enabledApps = apps.Where(a => a.IsEnabled).OrderBy(a => a.Order).ToList();
+            int totalApps = enabledApps.Count;
+            int currentApp = 0;
+
+            foreach (var app in enabledApps)
             {
+                currentApp++;
+                LaunchProgress?.Invoke(this, $"Launching {app.Name} ({currentApp}/{totalApps})...");
+
                 await LaunchAppAsync(app);
-                // Small delay between launches
-                await Task.Delay(100);
+
+                // Apply configured launch delay
+                if (app.LaunchDelay > 0)
+                {
+                    Log.Information("Waiting {Delay} seconds before next launch (configured delay for {AppName})", app.LaunchDelay, app.Name);
+
+                    // Report countdown for delays > 1 second
+                    if (app.LaunchDelay > 1)
+                    {
+                        for (int i = app.LaunchDelay; i > 0; i--)
+                        {
+                            LaunchProgress?.Invoke(this, $"Waiting {i} second(s) before next app...");
+                            await Task.Delay(1000);
+                        }
+                    }
+                    else
+                    {
+                        await Task.Delay(app.LaunchDelay * 1000);
+                    }
+                }
+                else
+                {
+                    // Default small delay to prevent race conditions
+                    await Task.Delay(100);
+                }
             }
 
+            LaunchProgress?.Invoke(this, "All apps launched!");
             Log.Information("Finished launching all enabled apps");
         }
 

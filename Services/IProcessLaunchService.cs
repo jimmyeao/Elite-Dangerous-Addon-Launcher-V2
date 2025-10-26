@@ -16,6 +16,11 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
         event EventHandler AllEliteProcessesExited;
 
         /// <summary>
+        /// Event raised during app launch progress with status updates
+        /// </summary>
+        event EventHandler<string> LaunchProgress;
+
+        /// <summary>
         /// Gets the list of launched process names
         /// </summary>
         List<string> LaunchedProcesses { get; }
