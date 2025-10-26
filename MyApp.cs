@@ -15,6 +15,8 @@ namespace Elite_Dangerous_Addon_Launcher_V2
         private int _order;
         private string _path;
         private string _webAppURL;
+        private int _launchDelay;
+        private bool _isRunning;
 
         #endregion Private Fields
 
@@ -30,7 +32,9 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 Name = this.Name,
                 Order = this.Order,
                 Path = this.Path,
-                WebAppURL = this.WebAppURL
+                WebAppURL = this.WebAppURL,
+                LaunchDelay = this.LaunchDelay,
+                IsRunning = false // Don't copy running state
             };
         }
 
@@ -139,6 +143,32 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 if (_webAppURL != value)
                 {
                     _webAppURL = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int LaunchDelay
+        {
+            get { return _launchDelay; }
+            set
+            {
+                if (_launchDelay != value)
+                {
+                    _launchDelay = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+            set
+            {
+                if (_isRunning != value)
+                {
+                    _isRunning = value;
                     OnPropertyChanged();
                 }
             }

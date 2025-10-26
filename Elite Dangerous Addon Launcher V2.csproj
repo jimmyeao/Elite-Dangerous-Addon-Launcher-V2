@@ -6,6 +6,7 @@
     <RootNamespace>Elite_Dangerous_Addon_Launcher_V2</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyVersion>1.1.6.11</AssemblyVersion>
     <FileVersion>1.1.6.11</FileVersion>
     <ApplicationIcon>elite-dangerous-icon.ico</ApplicationIcon>
