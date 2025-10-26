@@ -43,10 +43,23 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
         {
             try
             {
-                // Try to load the application icon
+                // Extract icon from the running executable (same icon as the app window)
+                string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                if (!string.IsNullOrEmpty(exePath) && System.IO.File.Exists(exePath))
+                {
+                    var icon = Icon.ExtractAssociatedIcon(exePath);
+                    if (icon != null)
+                    {
+                        Log.Information("Successfully extracted application icon from executable");
+                        return icon;
+                    }
+                }
+
+                // Try to load from standalone icon file as fallback
                 var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "elite-dangerous-icon.ico");
                 if (System.IO.File.Exists(iconPath))
                 {
+                    Log.Information("Loading application icon from file");
                     return new Icon(iconPath);
                 }
             }
@@ -56,6 +69,7 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
             }
 
             // Fallback to default application icon
+            Log.Warning("Using default system icon");
             return SystemIcons.Application;
         }
 
