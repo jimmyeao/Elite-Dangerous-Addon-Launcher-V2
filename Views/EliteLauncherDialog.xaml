@@ -15,6 +15,10 @@
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+
     <materialDesign:DialogHost Margin="0,0,0,-16">
         <materialDesign:Card Margin="16">
             <Grid Margin="16">

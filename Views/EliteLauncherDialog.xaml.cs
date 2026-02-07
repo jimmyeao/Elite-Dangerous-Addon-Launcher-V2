@@ -53,3 +53,4 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Views
         }
     }
 }
+
