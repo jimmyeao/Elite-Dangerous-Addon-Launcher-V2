@@ -82,5 +82,17 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Properties {
                 this["LastSeenVersion"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("300")]
+        public double AppNameColumnWidth {
+            get {
+                return ((double)(this["AppNameColumnWidth"]));
+            }
+            set {
+                this["AppNameColumnWidth"] = value;
+            }
+        }
     }
 }

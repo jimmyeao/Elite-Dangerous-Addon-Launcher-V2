@@ -1,0 +1,213 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:md="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+    xmlns:local="clr-namespace:Elite_Dangerous_Addon_Launcher_V2"
+    x:Name="Main"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+    xmlns:av="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="av"
+    x:Class="Elite_Dangerous_Addon_Launcher_V2.Views.MainWindow"
+    Title="{Binding ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
+    Width="741"
+    MinWidth="741"
+    SizeToContent="Height"
+    MinHeight="300"
+    MaxHeight="900"
+    TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+    Background="{DynamicResource MaterialDesign.Brush.Background}"
+    TextElement.FontWeight="Regular"
+    TextElement.FontSize="13"
+    TextOptions.TextFormattingMode="Ideal"
+    TextOptions.TextRenderingMode="Auto"
+    FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <materialDesign:BundledTheme BaseTheme="Light" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <ContextMenu x:Key="myContextMenu">
+                <MenuItem Header="Copy to profile..."
+                          ItemsSource="{Binding Source={x:Static local:AppState.Instance}, Path=OtherProfiles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Header" Value="{Binding Name}"/>
+                            <EventSetter Event="Click" Handler="ProfileMenuItem_Click"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </ContextMenu>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="10,10,2,2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="Bt_AddApp" Grid.Column="0" Content="Add App" Width="131" Margin="0,0,10,0"
+                    Click="Bt_AddApp_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                <Button Grid.Column="1" Content="Toggle Theme" Click="ToggleThemeButton_Click"
+                    Style="{DynamicResource MaterialDesignRaisedButton}" Margin="0,0,10,0" Width="131" />
+
+                <TextBlock Grid.Column="2" Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <ComboBox x:Name="Cb_Profiles" Grid.Column="3"
+                      ItemsSource="{Binding Profiles}"
+                      SelectedItem="{Binding CurrentProfile}"
+                      DisplayMemberPath="Name"
+                      Width="137" Margin="0,0,10,0" />
+                <CheckBox x:Name="DefaultCheckBox" Grid.Column="4" Content="Default"
+                      DataContext="{Binding CurrentProfile}"
+                      IsChecked="{Binding IsDefault, Mode=TwoWay}"
+                      Margin="0,0,10,0" Height="15"
+                      Checked="DefaultCheckbox_Checked"
+                      Unchecked="CheckBox_Unchecked" />
+                <Button x:Name="Btn_Launch" Grid.Column="5" Content="Launch"
+                    Command="{Binding LaunchAllCommand}"
+                    IsEnabled="{Binding IsLaunchButtonEnabled}"
+                    Style="{DynamicResource MaterialDesignRaisedButton}"
+                    Margin="0,0,10,0"
+                    MinWidth="106" HorizontalAlignment="Right" />
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Expander Header="Profiles.." Width="200">
+                    <StackPanel>
+                        <Button x:Name="Bt_AddProfile" Content="Add Profile" Click="Bt_AddProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_RemoveProfile" Content="Remove Profile" Click="Bt_RemoveProfile_Click_1" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_CopyProfile" Content="Copy Profile" Click="Bt_CopyProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Bt_RenameProfile" Content="Rename Profile" Click="Bt_RenameProfile_Click" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Btn_Import" Content="Import" Click="ImportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Btn_Export" Content="Export" Click="ExportProfiles" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                        <Button x:Name="Logs" Content="Logs" Click="Btn_ShowLogs" Style="{DynamicResource MaterialDesignRaisedButton}" />
+                    </StackPanel>
+                </Expander>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox x:Name="CloseAllAppsCheckbox" Content="Close apps on Exit"
+                          IsChecked="{Binding CloseAllAppsOnExit, Mode=TwoWay}"
+                          Margin="10,0,10,0" VerticalAlignment="Center" />
+                    <CheckBox x:Name="AlsoCloseThisAppCheckbox" Content="Also close this App"
+                          IsChecked="{Binding AlsoCloseThisApp, Mode=TwoWay}"
+                          IsEnabled="{Binding CloseAllAppsOnExit}"
+                          Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <CheckBox x:Name="MinimizeToTrayCheckbox" Content="Minimize to System Tray"
+                          IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
+                          Margin="0,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Changes for AddonDataGrid in MainWindow.xaml -->
+            <DataGrid x:Name="AddonDataGrid"
+          Grid.Column="0"
+          AutoGenerateColumns="False"
+          SelectionUnit="FullRow"
+          CanUserAddRows="False"
+          IsReadOnly="True"
+          GridLinesVisibility="None"
+          HorizontalGridLinesBrush="Transparent"
+          ItemsSource="{Binding CurrentProfile.Apps}"
+          SelectedItem="{Binding SelectedApp}"
+          CellEditEnding="AddonDataGrid_CellEditEnding"
+          dd:DragDrop.IsDragSource="True"
+          dd:DragDrop.IsDropTarget="True"
+          dd:DragDrop.DropHandler="{Binding CurrentProfile.DropHandler}"
+          Style="{StaticResource MaterialDesignDataGrid}"
+          ContextMenuOpening="AddonDataGrid_ContextMenuOpening"
+          ScrollViewer.VerticalScrollBarVisibility="Auto"
+          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="Auto" MaxWidth="300" />
+                    <DataGridTemplateColumn Header="Status" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="#BDBDBD"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                    <Setter Property="Fill" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Enabled" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Margin="10,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Launch" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Launch"
+                                        Command="{Binding DataContext.LaunchSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}"
+                                        Margin="5,2" Padding="10,5" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Edit" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Edit" Click="Btn_Edit_Click" CommandParameter="{Binding}" Margin="5,2" Padding="10,5" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Delete" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Delete" Click="DeleteButton_Click" CommandParameter="{Binding}" Margin="5,2" Padding="10,5" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Image Source="/app.png"
+               Grid.Column="1"
+               Width="125"
+               Margin="10,0"
+               Height="128"
+               VerticalAlignment="Top" />
+        </Grid>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" Background="{DynamicResource MaterialDesign.Brush.Background}">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontStyle="Italic"
+                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

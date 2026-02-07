@@ -1,7 +1,9 @@
 ﻿using GongSolutions.Wpf.DragDrop;
+using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace Elite_Dangerous_Addon_Launcher_V2
 {
@@ -34,6 +36,16 @@ namespace Elite_Dangerous_Addon_Launcher_V2
 
         #region Public Properties
 
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            // Initialize DropHandler after deserialization
+            if (DropHandler == null)
+            {
+                DropHandler = new ProfileDropHandler(this);
+            }
+        }
+
         public ObservableCollection<MyApp> Apps
         {
             get { return _apps; }
@@ -42,11 +54,16 @@ namespace Elite_Dangerous_Addon_Launcher_V2
                 if (_apps != value)
                 {
                     _apps = value;
+                    if (_apps != null)
+                    {
+                        _apps.CollectionChanged += (s, e) => OnPropertyChanged(nameof(Apps));
+                    }
                     OnPropertyChanged();
                 }
             }
         }
 
+        [JsonIgnore]
         public IDropTarget DropHandler { get; private set; }
 
         public bool IsDefault

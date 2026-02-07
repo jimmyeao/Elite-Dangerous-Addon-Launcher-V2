@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,16 +12,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Elite_Dangerous_Addon_Launcher_V2
+namespace Elite_Dangerous_Addon_Launcher_V2.Views
 {
     /// <summary>
     /// Interaction logic for CustomDialog.xaml
     /// </summary>
-    public partial class CustomDialog : Window
+    public partial class ErrorDialog : Window
     {
         public MessageBoxResult Result { get; set; }
 
-        public CustomDialog(string message)
+        public ErrorDialog(string message)
         {
             InitializeComponent();
             MessageTextBlock.Text = message;
