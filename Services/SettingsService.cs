@@ -24,6 +24,23 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                 return await LoadFromPathAsync(Constants.SettingsPath);
             }
 
+            // Try migrating from legacy location
+            if (File.Exists(Constants.LegacySettingsPath))
+            {
+                Log.Information("Migrating settings from legacy location: {LegacyPath} to {NewPath}",
+                    Constants.LegacySettingsPath, Constants.SettingsPath);
+                try
+                {
+                    File.Copy(Constants.LegacySettingsPath, Constants.SettingsPath);
+                    Log.Information("Settings migration successful");
+                    return await LoadFromPathAsync(Constants.SettingsPath);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to migrate settings from legacy location");
+                }
+            }
+
             // No settings file found, return defaults
             Log.Information("Settings file does not exist, returning defaults");
             return new Settings

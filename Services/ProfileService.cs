@@ -27,6 +27,23 @@ namespace Elite_Dangerous_Addon_Launcher_V2.Services
                 return await LoadFromPathAsync(Constants.ProfilesPath);
             }
 
+            // Try migrating from legacy location
+            if (File.Exists(Constants.LegacyProfilesPath))
+            {
+                Log.Information("Migrating profiles from legacy location: {LegacyPath} to {NewPath}",
+                    Constants.LegacyProfilesPath, Constants.ProfilesPath);
+                try
+                {
+                    File.Copy(Constants.LegacyProfilesPath, Constants.ProfilesPath);
+                    Log.Information("Profile migration successful");
+                    return await LoadFromPathAsync(Constants.ProfilesPath);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to migrate profiles from legacy location");
+                }
+            }
+
             // No profiles file found, return empty collection
             Log.Warning("Profiles file does not exist at {Path}", Constants.ProfilesPath);
             return new ObservableCollection<Profile>();
