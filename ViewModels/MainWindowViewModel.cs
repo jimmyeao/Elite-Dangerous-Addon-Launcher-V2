@@ -85,8 +85,17 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
             get => _currentProfile;
             set
             {
+                var previous = _currentProfile;
                 if (SetProperty(ref _currentProfile, value))
                 {
+                    // Unsubscribe from previous profile's app events
+                    if (previous?.Apps != null)
+                    {
+                        previous.Apps.CollectionChanged -= OnAppsCollectionChanged;
+                        foreach (var app in previous.Apps)
+                            app.PropertyChanged -= OnAppPropertyChanged;
+                    }
+
                     AppState.Instance.CurrentProfile = value;
                     OnPropertyChanged(nameof(Apps));
                     OnPropertyChanged(nameof(OtherProfiles));
@@ -94,10 +103,42 @@ namespace Elite_Dangerous_Addon_Launcher_V2.ViewModels
                     ((IRelayCommand)DeleteProfileCommand).RaiseCanExecuteChanged();
                     ((IRelayCommand)RenameProfileCommand).RaiseCanExecuteChanged();
 
+                    // Subscribe to new profile's app events so any property change triggers a save
+                    if (value?.Apps != null)
+                    {
+                        value.Apps.CollectionChanged += OnAppsCollectionChanged;
+                        foreach (var app in value.Apps)
+                            app.PropertyChanged += OnAppPropertyChanged;
+                    }
+
                     // Update running status for apps in the new profile
                     UpdateRunningStatus();
                 }
             }
+        }
+
+        private void OnAppsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (MyApp app in e.NewItems)
+                    app.PropertyChanged += OnAppPropertyChanged;
+
+            if (e.OldItems != null)
+                foreach (MyApp app in e.OldItems)
+                    app.PropertyChanged -= OnAppPropertyChanged;
+        }
+
+        private void OnAppPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            // IsRunning is a UI-only runtime property and should not trigger a save
+            if (e.PropertyName == nameof(MyApp.IsRunning))
+                return;
+
+            _ = SaveProfilesAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    Log.Error(t.Exception, "Error auto-saving profiles after app property change");
+            }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnFaulted);
         }
 
         public ObservableCollection<MyApp> Apps => CurrentProfile?.Apps;
