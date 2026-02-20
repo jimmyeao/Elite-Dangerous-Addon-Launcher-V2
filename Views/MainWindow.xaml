@@ -11,7 +11,7 @@
     mc:Ignorable="av"
     x:Class="Elite_Dangerous_Addon_Launcher_V2.Views.MainWindow"
     Title="{Binding ApplicationVersion, StringFormat='ED AddOn Helper v{0}'}"
-    Width="741"
+    Width="845"
     MinWidth="741"
     SizeToContent="Height"
     MinHeight="300"
